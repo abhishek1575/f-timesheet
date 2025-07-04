@@ -36,6 +36,9 @@ export default function Navbar() {
 
 
   const navigate = useNavigate();
+  const handleDraftClick = () => {
+    navigate("/draft-timesheets");
+  };
 
   // Load user details from sessionStorage
   const userName = sessionStorage.getItem("Name") || "N/A";
@@ -108,10 +111,15 @@ export default function Navbar() {
                 <AddBoxSharpIcon />
               </IconButton>
             </Tooltip>
+
             <Tooltip title="View Drafts" arrow placement="bottom">
-            <IconButton size="large" color="inherit">
-              <DraftsIcon />
-            </IconButton>
+              <IconButton
+                size="large"
+                color="inherit"
+                onClick={handleDraftClick}
+              >
+                <DraftsIcon />
+              </IconButton>
             </Tooltip>
           </Box>
           {auth && (
@@ -177,7 +185,6 @@ export default function Navbar() {
                 disableEscapeKeyDown
                 fullWidth
                 maxWidth={false} // Disable max width
-                
                 PaperProps={{
                   sx: {
                     display: "flex",

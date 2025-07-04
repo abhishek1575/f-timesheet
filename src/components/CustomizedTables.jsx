@@ -14,7 +14,7 @@ import { useState } from "react";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    background: "#424242", // Dark Gray, smooth with black-and-white theme
+    background: "#424242", 
     color: "#fff",
   },
   [`&.${tableCellClasses.body}`]: {

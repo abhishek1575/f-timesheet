@@ -68,3 +68,36 @@ export const submitTimesheet = async (timesheetId) => {
     throw error;
   }
 };
+
+import axios from "axios";
+
+
+
+
+// Get all draft timesheets
+export const getDraftTimesheets = () => {
+  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
+  return axios.get(`${config.BASE_URL}sheets/draft`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+};
+
+// Get timesheet by ID
+export const getTimesheetById = (id) => {
+  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
+  return axios.get(`${config.BASE_URL}sheets/${id}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+};
+
+// Update timesheet
+export const updateTimesheet = (id, data) => {
+  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
+  return axios.put(`${config.BASE_URL}sheets/${id}`, data, {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "application/json",
+    },
+  });
+};
+
