@@ -1,8 +1,13 @@
+import CustomizedTables from "./CustomizedTables";
+import Navbar from "./Navbar";
+import React from "react";
+
 const EDashboard = () => {
     return (
-        <>
-            <h1>Employee Dashboard</h1>
-        </>
+       <div>
+        <Navbar/>
+        <CustomizedTables />
+       </div>
     );
 }
 export default EDashboard;
