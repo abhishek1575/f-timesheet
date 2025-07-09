@@ -21,6 +21,7 @@ import ChangePasswordModal from "./ChangePasswordModal";
 import AddBoxSharpIcon from "@mui/icons-material/AddBoxSharp";
 import CreateTimesheet from "./CreateTimesheet";
 import DraftsIcon from "@mui/icons-material/Drafts";
+import EditUserProfile from "./EditUserProfile";
 
 export default function Navbar() {
   const [auth, setAuth] = useState(true);
@@ -34,6 +35,18 @@ export default function Navbar() {
   const handleCloseTimesheet = () => setOpen(false);
 
 
+  // const [openEditProfile, setOpenEditProfile] = useState(false);
+  // const handleOpenEditProfile = ()  =>{setOpenEditProfile(true)};
+  // const handleCloseEditProfile = ()  =>{setOpenEditProfile(false)};
+
+
+  const [isUserDialogOpen, setUserDialogOpen] = useState(false);
+  const openUserDialog = () => setUserDialogOpen(true);
+  const closeUserDialog = () => setUserDialogOpen(false);
+
+
+
+  // Navigate to Draft Timesheets
 
   const navigate = useNavigate();
   const handleDraftClick = () => {
@@ -44,6 +57,7 @@ export default function Navbar() {
   const userName = sessionStorage.getItem("Name") || "N/A";
   const userEmail = sessionStorage.getItem("Email") || "N/A";
   const userRole = sessionStorage.getItem("Role") || "N/A";
+  const userManager = sessionStorage.getItem("Manager") || "N/A";
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -97,7 +111,13 @@ export default function Navbar() {
         }}
       >
         <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" sx={{ mr: 2 }}>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            sx={{ mr: 2 }}
+            onClick={openUserDialog}
+          >
             <MenuIcon />
           </IconButton>
 
@@ -159,6 +179,9 @@ export default function Navbar() {
                   <Typography>
                     <strong>Role:</strong> {userRole}
                   </Typography>
+                  <Typography>
+                    <strong>Manager:</strong> {userManager}
+                  </Typography>
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleCloseProfileDialog}>Close</Button>
@@ -209,6 +232,10 @@ export default function Navbar() {
                   <CreateTimesheet onCancel={handleCloseTimesheet} />
                 </Box>
               </Dialog>
+              <EditUserProfile
+                open={isUserDialogOpen}
+                onClose={closeUserDialog}
+              />
             </>
           )}
         </Toolbar>

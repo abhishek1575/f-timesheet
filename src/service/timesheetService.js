@@ -1,5 +1,5 @@
 import config from "./config";
-
+import axios from "axios";
 
 export const getAllTimesheets = async () => {
   try {
@@ -54,7 +54,8 @@ export const submitTimesheet = async (timesheetId) => {
   const token = sessionStorage.getItem("token");
   try {
     const response = await axios.put(
-      `${config.BASE_URL}/${timesheetId}/submit`,
+      `${config.BASE_URL}sheets/${timesheetId}/submit`,
+      {}, // No body needed here
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -69,35 +70,44 @@ export const submitTimesheet = async (timesheetId) => {
   }
 };
 
-import axios from "axios";
-
-
-
 
 // Get all draft timesheets
 export const getDraftTimesheets = () => {
-  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
   return axios.get(`${config.BASE_URL}sheets/draft`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
+
 
 // Get timesheet by ID
-export const getTimesheetById = (id) => {
-  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
-  return axios.get(`${config.BASE_URL}sheets/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+export const getTimesheetById = async (timesheetId) => {
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+  return axios.get(`${config.BASE_URL}sheets/${timesheetId}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 };
 
+
 // Update timesheet
-export const updateTimesheet = (id, data) => {
-  const getToken = () =>{sessionStorage.getItem("token") || localStorage.getItem("token")};
-  return axios.put(`${config.BASE_URL}sheets/${id}`, data, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-      "Content-Type": "application/json",
-    },
-  });
+export const updateTimesheet = async (timesheetId, timesheetData) => {
+  const token =
+    sessionStorage.getItem("token") || localStorage.getItem("token");
+  try {
+    const response = await axios.put(
+      `${config.BASE_URL}sheets/${timesheetId}`,
+      timesheetData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
 };
 

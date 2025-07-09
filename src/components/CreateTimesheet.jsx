@@ -75,10 +75,12 @@ export default function CreateTimesheet({ onCancel }) {
       localStorage.setItem("draftTimesheetId", response.id);
       setTimesheetId(response.id);
       alert("Draft saved with ID: " + response.id);
+      onCancel(); // Close the dialog after successful draft save
     } catch {
       alert("Failed to save draft.");
     }
   };
+
 
   const handleSubmit = async () => {
     if (!validate()) return;

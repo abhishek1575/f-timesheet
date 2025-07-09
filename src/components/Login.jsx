@@ -220,9 +220,20 @@ function Login() {
             GET STARTED
           </button>
         </form>
-        <a href="/forgotpassword" style={forgotPasswordStyle}>
-          Forgot Password?
-        </a>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginTop: "10px",
+          }}
+        >
+          <a href="/signup" style={forgotPasswordStyle}>
+            Sign Up
+          </a>
+          <a href="/forgotpassword" style={forgotPasswordStyle}>
+            Forgot Password?
+          </a>
+        </div>
       </div>
     </div>
   );
