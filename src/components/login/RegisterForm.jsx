@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import config from "../service/config";
+import config from "../../service/config";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({

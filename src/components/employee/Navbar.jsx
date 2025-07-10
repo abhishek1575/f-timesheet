@@ -17,11 +17,11 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
-import ChangePasswordModal from "./ChangePasswordModal";
+import ChangePasswordModal from "../component/ChangePasswordModal";
 import AddBoxSharpIcon from "@mui/icons-material/AddBoxSharp";
-import CreateTimesheet from "./CreateTimesheet";
+import CreateTimesheet from "../component/CreateTimesheet";
 import DraftsIcon from "@mui/icons-material/Drafts";
-import EditUserProfile from "./EditUserProfile";
+import EditUserProfile from "../component/EditUserProfile";
 
 export default function Navbar() {
   const [auth, setAuth] = useState(true);
@@ -34,17 +34,9 @@ export default function Navbar() {
   const handleOpenTimesheet = () => setOpen(true);
   const handleCloseTimesheet = () => setOpen(false);
 
-
-  // const [openEditProfile, setOpenEditProfile] = useState(false);
-  // const handleOpenEditProfile = ()  =>{setOpenEditProfile(true)};
-  // const handleCloseEditProfile = ()  =>{setOpenEditProfile(false)};
-
-
   const [isUserDialogOpen, setUserDialogOpen] = useState(false);
   const openUserDialog = () => setUserDialogOpen(true);
   const closeUserDialog = () => setUserDialogOpen(false);
-
-
 
   // Navigate to Draft Timesheets
 
@@ -111,6 +103,7 @@ export default function Navbar() {
         }}
       >
         <Toolbar>
+        <Tooltip title="Assign Manager" arrow placement="bottom">
           <IconButton
             size="large"
             edge="start"
@@ -120,6 +113,7 @@ export default function Navbar() {
           >
             <MenuIcon />
           </IconButton>
+        </Tooltip>
 
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
             <Tooltip title="Add Timesheet" arrow placement="bottom">

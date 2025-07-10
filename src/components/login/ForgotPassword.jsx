@@ -12,7 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ForgotPasswordServices from "../service/forgotPasswordUrl"; 
+import ForgotPasswordServices from "../../service/forgotPasswordUrl"; 
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -101,15 +101,6 @@ const ForgotPassword = () => {
           >
             {/* Logo */}
             <div style={{ margin: "8px", textAlign: "center" }}>
-              {/* <img
-                src={ceinsys_logo}
-                alt="Logo"
-                style={{
-                  width: "200px",
-                  height: "80px",
-                  display: "inline-block",
-                }}
-              /> */}
             </div>
 
             <Typography variant="h5" component="h1" textAlign="center">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { changePassword } from "../service/passwordchage";
+import  changePassword  from '../../service/AuthService';
 import { Modal, Box, Typography, TextField, Button } from "@mui/material";
 
 const ChangePasswordModal = ({ open, onClose }) => {

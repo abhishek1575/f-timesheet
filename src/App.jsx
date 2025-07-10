@@ -1,12 +1,14 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import Login from './components/Login'
-import MDashboard from './components/MDashboard';
-import EDashboard from './components/EDashboard';
-import CreateTimesheet from './components/CreateTimesheet';
-import UpdateTimesheet from './components/UpdateTimesheet';
-import DraftTimesheetTable from './components/DraftTimesheetTable';
-import ForgotPassword from './components/ForgotPassword';
-import RegisterForm from './components/RegisterForm';
+import Login from './components/login/Login'
+import MDashboard from './components/manager/MDashboard';
+import EDashboard from './components/employee/EDashboard';
+import CreateTimesheet from './components/component/CreateTimesheet';
+import UpdateTimesheet from './components/component/UpdateTimesheet'
+import DraftTimesheetTable from './components/component/DraftTimesheetTable';
+import ForgotPassword from './components/login/ForgotPassword';
+import RegisterForm from './components/login/RegisterForm';
+import TeamMemberTable from './components/manager/TeamMemberTable';
+import PendingTimesheetDialog from './components/manager/PendingTimesheetDialog';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/update-timesheet/:id" element={<UpdateTimesheet />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/signup" element={<RegisterForm />} />
+        <Route path="/team-members" element={<TeamMemberTable />} />
+        <Route path='/approval-requests' element={<PendingTimesheetDialog />} />
       </Routes>
     </>
   );

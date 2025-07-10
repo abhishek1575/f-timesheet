@@ -13,7 +13,7 @@ import {
   fetchUserById,
   fetchManagersOrAdmins,
   updateUser,
-} from "../service/userService";
+} from '../../service/userService'; // Adjust the import path as necessary
 
 const EditUserProfile = ({ open, onClose }) => {
   const [formData, setFormData] = useState({

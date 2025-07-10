@@ -1,0 +1,50 @@
+  {/* <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 700 }} aria-label="draft timesheet table">
+          <TableHead>
+            <StyledTableRow>
+              <StyledTableCell align="center">Project</StyledTableCell>
+              <StyledTableCell align="center">Task Name</StyledTableCell>
+              <StyledTableCell align="center">Start Date</StyledTableCell>
+              <StyledTableCell align="center">End Date</StyledTableCell>
+              <StyledTableCell align="center">Effort (Hrs)</StyledTableCell>
+              <StyledTableCell align="center">Update</StyledTableCell>
+              <StyledTableCell align="center">Submit</StyledTableCell>
+            </StyledTableRow>
+          </TableHead>
+          <TableBody>
+            {timesheets.map((sheet) => (
+              <StyledTableRow key={sheet.id}>
+                <StyledTableCell align="center">
+                  {sheet.project}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {sheet.taskName}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {sheet.startDate}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {sheet.endDate}
+                </StyledTableCell>
+                <StyledTableCell align="center">{sheet.effort}</StyledTableCell>
+                <StyledTableCell align="center">
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleEdit(sheet.id)}
+                  >
+                    Update
+                  </Button>
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <Button
+                    variant="contained"
+                    onClick={() => handleSubmit(sheet.id)}
+                  >
+                    Submit
+                  </Button>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer> */}

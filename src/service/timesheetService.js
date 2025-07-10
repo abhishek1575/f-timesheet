@@ -91,8 +91,9 @@ export const getTimesheetById = async (timesheetId) => {
 
 // Update timesheet
 export const updateTimesheet = async (timesheetId, timesheetData) => {
-  const token =
-    sessionStorage.getItem("token") || localStorage.getItem("token");
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+  console.log("Updating timesheet with ID:", timesheetId + " and data:", timesheetData);
+   
   try {
     const response = await axios.put(
       `${config.BASE_URL}sheets/${timesheetId}`,
@@ -109,5 +110,35 @@ export const updateTimesheet = async (timesheetId, timesheetData) => {
     console.error("API Error:", error);
     throw error;
   }
+};
+
+
+
+export const fetchTeamMembers = async (managerId, token) => {
+  try {
+    const response = await axios.get(
+      `${config.BASE_URL}users/team/${managerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching team members:", error);
+    throw error;
+  }
+};
+
+export const fetchTeamTimesheets = async (token) => {
+  const response = await fetch(`${config.BASE_URL}sheets/team-timesheets`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch timesheets");
+  return await response.json();
 };
 

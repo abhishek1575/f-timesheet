@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthService from "../service/AuthService";
+import AuthService from "../../service/AuthService";
 import { Snackbar, Alert } from "@mui/material";
-import bgImage from "../assets/timesheet-background.jpg";
+import bgImage from "../../assets/timesheet-background.jpg";
 
 
 function Login() {
