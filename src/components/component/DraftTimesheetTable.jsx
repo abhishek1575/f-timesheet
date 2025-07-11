@@ -74,7 +74,24 @@ export default function DraftTimesheetTable() {
     }
   };
 
+  // const handleSubmit = async (id) => {
+  //   try {
+  //     await submitTimesheet(id);
+  //     console.log("Timesheet id submitted:", id);
+  //     alert("Timesheet Submitted Successfully!");
+  //     loadDraftTimesheets();
+  //   } catch (error) {
+  //     console.error("Submit Error", error);
+  //   }
+  // };
+
   const handleSubmit = async (id) => {
+    // const todayDay = new Date().getDay(); // 0=Sunday, 1=Monday, 2=Tuesday...
+    // if (todayDay !== 1 && todayDay !== 2) {
+    //   alert("Timesheets can only be submitted on Monday or Tuesday.");
+    //   return; // Block submission on other days
+    // }
+
     try {
       await submitTimesheet(id);
       console.log("Timesheet id submitted:", id);

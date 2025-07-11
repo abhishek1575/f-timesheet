@@ -15,7 +15,6 @@ import {
   Tooltip,
   Badge,
 } from "@mui/material";
-import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GroupsIcon from "@mui/icons-material/Groups";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -26,9 +25,7 @@ import AddBoxSharpIcon from "@mui/icons-material/AddBoxSharp";
 import CreateTimesheet from "../component/CreateTimesheet";
 import DraftsIcon from "@mui/icons-material/Drafts";
 import EditUserProfile from "../component/EditUserProfile";
-
 import NotificationBadge from "../component/NotificationBadge";
-import TimesheetDialog from "./TimesheetDialog";
 import config from "../../service/config";
 import PendingTimesheetDialog from "./PendingTimesheetDialog";
 
@@ -58,6 +55,7 @@ export default function MNavbar() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [dialogSource, setDialogSource] = useState("");
 
 
   // Load user details from sessionStorage
@@ -116,11 +114,23 @@ export default function MNavbar() {
     const data = await res.json();
     setPendingTimesheets(data);
   };
+  const handleFactCheckClick = async () => {
+    await fetchPendingTimesheets();
+    setDialogSource("factCheck");
+    setDialogOpen(true);
+  };
+
+  // const handleNotificationClick = async () => {
+  //   await fetchPendingTimesheets();
+  //   setDialogOpen(true);
+  // };
 
   const handleNotificationClick = async () => {
     await fetchPendingTimesheets();
+    setDialogSource("notification");
     setDialogOpen(true);
   };
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -176,7 +186,7 @@ export default function MNavbar() {
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={() => navigate("/approval-requests")}
+                onClick={() => setApprovalDialogOpen(true)}
               >
                 <FactCheckIcon />
               </IconButton>
@@ -185,7 +195,7 @@ export default function MNavbar() {
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={() => setApprovalDialogOpen(true)}
+                onClick={handleNotificationClick}
               >
                 <FactCheckIcon />
               </IconButton>
@@ -195,18 +205,8 @@ export default function MNavbar() {
           </Box>
           {auth && (
             <>
-              {/* <Tooltip title="Notifications" arrow placement="bottom">
-                <IconButton
-                  onClick={(e) => setAnchorEl(e.currentTarget)}
-                  size="large"
-                  color="inherit"
-                >
-                  <Badge badgeContent={pendingCount} color="error">
-                    <NotificationsNoneOutlinedIcon />
-                  </Badge>
-                </IconButton>
-              </Tooltip> */}
-              <NotificationBadge onClick={handleNotificationClick} />
+              <NotificationBadge  />
+              
 
               <IconButton size="large" onClick={handleMenu} color="inherit">
                 <AccountCircle />
@@ -301,13 +301,29 @@ export default function MNavbar() {
                 onClose={closeUserDialog}
               />
 
+              {/* <PendingTimesheetDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                timesheets={pendingTimesheets}
+              /> */}
+              {/* <PendingTimesheetDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                timesheets={pendingTimesheets}
+                title="Pending Approval Requests"
+              /> */}
               <PendingTimesheetDialog
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
                 timesheets={pendingTimesheets}
+                title={
+                  dialogSource === "notification"
+                    ? "Your Pending Timesheets"
+                    : "Pending Approval Requests"
+                }
               />
 
-              <Dialog
+              {/* <Dialog
                 open={approvalDialogOpen}
                 onClose={() => setApprovalDialogOpen(false)}
                 fullWidth
@@ -324,7 +340,7 @@ export default function MNavbar() {
                     Close
                   </Button>
                 </DialogActions>
-              </Dialog>
+              </Dialog> */}
             </>
           )}
         </Toolbar>

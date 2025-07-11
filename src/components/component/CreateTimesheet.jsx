@@ -42,11 +42,13 @@ export default function CreateTimesheet({ onCancel }) {
 
     if (!timesheet.taskName) newErrors.taskName = "This field is compulsory";
     if (!timesheet.project) newErrors.project = "This field is compulsory";
+
     if (!timesheet.startDate) {
       newErrors.startDate = "This field is compulsory";
     } else if (timesheet.startDate < today) {
       newErrors.startDate = "Start Date cannot be in the past";
     }
+
     if (!timesheet.endDate) {
       newErrors.endDate = "This field is compulsory";
     } else if (timesheet.endDate < today) {
@@ -54,6 +56,7 @@ export default function CreateTimesheet({ onCancel }) {
     } else if (timesheet.endDate < timesheet.startDate) {
       newErrors.endDate = "End Date cannot be before Start Date";
     }
+
     if (!timesheet.effort) newErrors.effort = "This field is compulsory";
 
     const wordCount = timesheet.taskName
@@ -67,7 +70,7 @@ export default function CreateTimesheet({ onCancel }) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  
   const saveDraft = async () => {
     try {
       const response = await createTimesheet(timesheet);
@@ -84,6 +87,13 @@ export default function CreateTimesheet({ onCancel }) {
 
   const handleSubmit = async () => {
     if (!validate()) return;
+
+    // Check today's day for submission
+    // const todayDay = new Date().getDay();
+    // if (todayDay !== 1 && todayDay !== 2) {
+    //   alert("You can only submit timesheets on Monday or Tuesday.");
+    //   return;
+    // }
 
     try {
       let id = timesheetId;
@@ -110,7 +120,8 @@ export default function CreateTimesheet({ onCancel }) {
       alert("Failed to submit timesheet.");
     }
   };
-
+  
+  
   const today = new Date().toISOString().split("T")[0];
 
   return (

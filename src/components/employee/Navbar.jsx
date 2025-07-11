@@ -22,6 +22,8 @@ import AddBoxSharpIcon from "@mui/icons-material/AddBoxSharp";
 import CreateTimesheet from "../component/CreateTimesheet";
 import DraftsIcon from "@mui/icons-material/Drafts";
 import EditUserProfile from "../component/EditUserProfile";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
 
 export default function Navbar() {
   const [auth, setAuth] = useState(true);
@@ -37,6 +39,9 @@ export default function Navbar() {
   const [isUserDialogOpen, setUserDialogOpen] = useState(false);
   const openUserDialog = () => setUserDialogOpen(true);
   const closeUserDialog = () => setUserDialogOpen(false);
+
+  const [rejectedDialogOpen, setRejectedDialogOpen] = useState(false);
+
 
   // Navigate to Draft Timesheets
 
@@ -103,17 +108,17 @@ export default function Navbar() {
         }}
       >
         <Toolbar>
-        <Tooltip title="Assign Manager" arrow placement="bottom">
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            sx={{ mr: 2 }}
-            onClick={openUserDialog}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Tooltip>
+          <Tooltip title="Assign Manager" arrow placement="bottom">
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              sx={{ mr: 2 }}
+              onClick={openUserDialog}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Tooltip>
 
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
             <Tooltip title="Add Timesheet" arrow placement="bottom">
@@ -133,6 +138,11 @@ export default function Navbar() {
                 onClick={handleDraftClick}
               >
                 <DraftsIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Reject Timesheet" arrow placement="bottom">
+              <IconButton onClick={() => setRejectedDialogOpen(true)}>
+                <CancelIcon color="error" />
               </IconButton>
             </Tooltip>
           </Box>
@@ -229,6 +239,10 @@ export default function Navbar() {
               <EditUserProfile
                 open={isUserDialogOpen}
                 onClose={closeUserDialog}
+              />
+              <RejectedTimesheetDialog
+                open={rejectedDialogOpen}
+                onClose={() => setRejectedDialogOpen(false)}
               />
             </>
           )}

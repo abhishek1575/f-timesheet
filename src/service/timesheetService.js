@@ -142,3 +142,34 @@ export const fetchTeamTimesheets = async (token) => {
   return await response.json();
 };
 
+
+
+
+export const fetchPendingTimesheets = async () => {
+  const token = sessionStorage.getItem("token");
+  const res = await fetch(`${config.BASE_URL}sheets/pending`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+};
+
+export const approveTimesheetById = async (id) => {
+  const token = sessionStorage.getItem("token");
+  await fetch(`${config.BASE_URL}sheets/${id}/approve`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const rejectTimesheetById = async (id, remark) => {
+  const token = sessionStorage.getItem("token");
+  await fetch(
+    `${config.BASE_URL}sheets/${id}/reject?comment=${encodeURIComponent(
+      remark
+    )}`,
+    {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
