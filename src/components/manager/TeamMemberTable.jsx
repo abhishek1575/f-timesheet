@@ -11,10 +11,6 @@ import {
   IconButton,
   Typography,
   Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
@@ -29,6 +25,7 @@ const TeamMemberTable = () => {
   const [teamTimesheets, setTeamTimesheets] = useState({});
   const [selectedTimesheets, setSelectedTimesheets] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+
   const managerId = sessionStorage.getItem("UserId");
   const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
@@ -39,7 +36,6 @@ const TeamMemberTable = () => {
         const members = await fetchTeamMembers(managerId, token);
         setTeamMembers(members);
 
-        // Fetch team timesheets once
         const timesheets = await fetchTeamTimesheets(token);
         setTeamTimesheets(timesheets);
       } catch (error) {
@@ -60,46 +56,100 @@ const TeamMemberTable = () => {
   };
 
   return (
-    <Box sx={{ mt: 4, mx: "auto", maxWidth: 800 }}>
-      <Box display="flex" alignItems="center" mb={2}>
-        <IconButton onClick={() => navigate("/mdashboard")}>
-          <ArrowBackIcon sx={{ color: "black" }} />
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(to bottom right, #263238, #37474F)",
+        py: 4,
+        px: 2,
+      }}
+    >
+      {/* Header */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={3}
+        maxWidth={900}
+        mx="auto"
+      >
+        <IconButton
+          onClick={() => {
+            const role = sessionStorage.getItem("Role");
+            if (role === "MANAGER") navigate("/mdashboard");
+            else if (role === "ADMIN") navigate("/adashboard");
+            else alert("Unauthorized role");
+          }}
+        >
+          <ArrowBackIcon sx={{ color: "#ffffff" }} />
         </IconButton>
-        <Typography variant="h6" sx={{ ml: 1, fontWeight: "bold" }}>
+        <Typography
+          variant="h4"
+          align="center"
+          sx={{
+            flexGrow: 1,
+            color: "#ffffff",
+            fontWeight: 700,
+            letterSpacing: 1,
+          }}
+        >
           Team Members
         </Typography>
       </Box>
 
-      <TableContainer component={Paper} elevation={6} sx={{ borderRadius: 2 }}>
+      {/* Table */}
+      <TableContainer
+        component={Paper}
+        elevation={8}
+        sx={{
+          maxWidth: 900,
+          mx: "auto",
+          borderRadius: 3,
+          overflow: "hidden",
+        }}
+      >
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#212121" }}>
-              <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>
+            <TableRow sx={{ backgroundColor: "#263238" }}>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
                 ID
               </TableCell>
-              <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
                 Name
               </TableCell>
-              <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
                 Email
               </TableCell>
-              <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>
+              <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
                 Action
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {teamMembers.map((member) => (
-              <TableRow key={member.id}>
+              <TableRow
+                key={member.id}
+                hover
+                sx={{ backgroundColor: "#ECEFF1" }}
+              >
                 <TableCell>{member.id}</TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.email}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"
+                    size="small"
                     sx={{
-                      backgroundColor: "#424242",
-                      "&:hover": { backgroundColor: "#333333" },
+                      backgroundColor: "#0097A7",
+                      color: "#fff",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      px: 2,
+                      py: 0.5,
+                      "&:hover": {
+                        backgroundColor: "#006064",
+                      },
                     }}
                     onClick={() => handleShowTimesheets(member)}
                   >
@@ -112,6 +162,7 @@ const TeamMemberTable = () => {
         </Table>
       </TableContainer>
 
+      {/* Dialog */}
       <TimesheetDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
@@ -136,40 +187,71 @@ export default TeamMemberTable;
 //   IconButton,
 //   Typography,
 //   Box,
+//   Dialog,
+//   DialogTitle,
+//   DialogContent,
+//   DialogActions,
 // } from "@mui/material";
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-// import { fetchTeamMembers } from "../../service/timesheetService";
+// import {
+//   fetchTeamMembers,
+//   fetchTeamTimesheets,
+// } from "../../service/timesheetService";
 // import { useNavigate } from "react-router-dom";
+// import TimesheetDialog from "./TimesheetDialog";
 
 // const TeamMemberTable = () => {
 //   const [teamMembers, setTeamMembers] = useState([]);
+//   const [teamTimesheets, setTeamTimesheets] = useState({});
+//   const [selectedTimesheets, setSelectedTimesheets] = useState([]);
+//   const [openDialog, setOpenDialog] = useState(false);
 //   const managerId = sessionStorage.getItem("UserId");
 //   const token = sessionStorage.getItem("token");
 //   const navigate = useNavigate();
 
 //   useEffect(() => {
-//     const getTeamMembers = async () => {
+//     const getData = async () => {
 //       try {
-//         const data = await fetchTeamMembers(managerId, token);
-//         setTeamMembers(data);
+//         const members = await fetchTeamMembers(managerId, token);
+//         setTeamMembers(members);
+
+//         // Fetch team timesheets once
+//         const timesheets = await fetchTeamTimesheets(token);
+//         setTeamTimesheets(timesheets);
 //       } catch (error) {
-//         console.error("Failed to fetch team members");
+//         console.error("Failed to fetch data");
 //       }
 //     };
 
-//     getTeamMembers();
+//     getData();
 //   }, []);
 
 //   const handleShowTimesheets = (member) => {
-//     alert(`Show timesheets for ${member.name} (ID: ${member.id})`);
-//     // Navigate or open timesheet dialog here
+//     const key = Object.keys(teamTimesheets).find((k) =>
+//       k.includes(member.email)
+//     );
+//     const timesheets = teamTimesheets[key] || [];
+//     setSelectedTimesheets(timesheets);
+//     setOpenDialog(true);
 //   };
 
 //   return (
 //     <Box sx={{ mt: 4, mx: "auto", maxWidth: 800 }}>
-//       {/* Back Button */}
 //       <Box display="flex" alignItems="center" mb={2}>
-//         <IconButton onClick={() => navigate("/mdashboard")}>
+//         <IconButton
+//           onClick={() => {
+//             const userRole = sessionStorage.getItem("Role");
+//             console.log("User Role:", userRole);
+
+//             if (userRole === "MANAGER") {
+//               navigate("/mdashboard");
+//             } else if (userRole === "ADMIN") {
+//               navigate("/adashboard");
+//             } else {
+//               alert("Unauthorized role");
+//             }
+//           }}
+//         >
 //           <ArrowBackIcon sx={{ color: "black" }} />
 //         </IconButton>
 //         <Typography variant="h6" sx={{ ml: 1, fontWeight: "bold" }}>
@@ -177,23 +259,10 @@ export default TeamMemberTable;
 //         </Typography>
 //       </Box>
 
-//       {/* Team Members Table */}
-//       <TableContainer
-//         component={Paper}
-//         elevation={6}
-//         sx={{
-//           borderRadius: 2,
-//           overflow: "hidden",
-//           boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-//         }}
-//       >
+//       <TableContainer component={Paper} elevation={6} sx={{ borderRadius: 2 }}>
 //         <Table>
 //           <TableHead>
-//             <TableRow
-//               sx={{
-//                 backgroundColor: "#212121", // Dark header
-//               }}
-//             >
+//             <TableRow sx={{ backgroundColor: "#212121" }}>
 //               <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>
 //                 ID
 //               </TableCell>
@@ -210,18 +279,7 @@ export default TeamMemberTable;
 //           </TableHead>
 //           <TableBody>
 //             {teamMembers.map((member) => (
-//               <TableRow
-//                 key={member.id}
-//                 sx={{
-//                   backgroundColor: "#f9f9f9", // Light row background
-//                   "&:nth-of-type(even)": {
-//                     backgroundColor: "#eeeeee", // Alternate row background
-//                   },
-//                   "&:hover": {
-//                     backgroundColor: "#e0e0e0", // Hover effect
-//                   },
-//                 }}
-//               >
+//               <TableRow key={member.id}>
 //                 <TableCell>{member.id}</TableCell>
 //                 <TableCell>{member.name}</TableCell>
 //                 <TableCell>{member.email}</TableCell>
@@ -230,10 +288,7 @@ export default TeamMemberTable;
 //                     variant="contained"
 //                     sx={{
 //                       backgroundColor: "#424242",
-//                       color: "white",
-//                       "&:hover": {
-//                         backgroundColor: "#333333",
-//                       },
+//                       "&:hover": { backgroundColor: "#333333" },
 //                     }}
 //                     onClick={() => handleShowTimesheets(member)}
 //                   >
@@ -245,6 +300,12 @@ export default TeamMemberTable;
 //           </TableBody>
 //         </Table>
 //       </TableContainer>
+
+//       <TimesheetDialog
+//         open={openDialog}
+//         onClose={() => setOpenDialog(false)}
+//         timesheets={selectedTimesheets}
+//       />
 //     </Box>
 //   );
 // };

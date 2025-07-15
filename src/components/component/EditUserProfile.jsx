@@ -8,12 +8,13 @@ import {
   Button,
   MenuItem,
   Box,
+  Stack,
 } from "@mui/material";
 import {
   fetchUserById,
   fetchManagersOrAdmins,
   updateUser,
-} from '../../service/userService'; // Adjust the import path as necessary
+} from "../../service/userService"; // Adjust the import path if needed
 
 const EditUserProfile = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
@@ -28,9 +29,7 @@ const EditUserProfile = ({ open, onClose }) => {
   const token = sessionStorage.getItem("token");
 
   useEffect(() => {
-    if (open) {
-      loadUserData();
-    }
+    if (open) loadUserData();
   }, [open]);
 
   const loadUserData = async () => {
@@ -66,12 +65,11 @@ const EditUserProfile = ({ open, onClose }) => {
       [name]: name === "managerId" ? (value ? Number(value) : null) : value,
     }));
 
-    // Auto-load managers/admins if role changes
     if (name === "role") {
       loadManagersOrAdmins(value);
       setFormData((prev) => ({
         ...prev,
-        managerId: "", // Reset manager on role change
+        managerId: "",
       }));
     }
   };
@@ -90,33 +88,38 @@ const EditUserProfile = ({ open, onClose }) => {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={(event, reason) => {
+        if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+          onClose();
+        }
+      }}
       maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: {
-          minHeight: "300px",
-          borderRadius: 4,
-          boxShadow: 6,
-          p: 2,
-          backgroundColor: "#f9f9f9",
+          borderRadius: 3,
+          backgroundColor: "#2e2e2e",
+          color: "#f0f0f0",
+          px: 3,
+          py: 2,
         },
       }}
     >
       <DialogTitle
         sx={{
           fontWeight: "bold",
+          fontSize: "1.25rem",
           textAlign: "center",
-          borderBottom: "1px solid #ccc",
+          color: "#e0e0e0",
+          borderBottom: "1px solid #444",
           pb: 1,
-          mb: 2,
         }}
       >
-        Edit User Profile
+        ✏️ Edit User Profile
       </DialogTitle>
 
-      <DialogContent sx={{ mt: 2 }}>
-        <Box display="flex" flexDirection="column" gap={2}>
+      <DialogContent>
+        <Stack spacing={2} mt={2}>
           <TextField
             name="name"
             label="Name"
@@ -124,6 +127,8 @@ const EditUserProfile = ({ open, onClose }) => {
             onChange={handleChange}
             fullWidth
             variant="outlined"
+            InputLabelProps={{ style: { color: "#BDBDBD" } }}
+            InputProps={{ style: { color: "#E0E0E0" } }}
           />
           <TextField
             name="email"
@@ -132,9 +137,9 @@ const EditUserProfile = ({ open, onClose }) => {
             onChange={handleChange}
             fullWidth
             variant="outlined"
+            InputLabelProps={{ style: { color: "#BDBDBD" } }}
+            InputProps={{ style: { color: "#E0E0E0" } }}
           />
-
-          {/* Role Dropdown */}
           <TextField
             select
             label="Role"
@@ -143,13 +148,13 @@ const EditUserProfile = ({ open, onClose }) => {
             onChange={handleChange}
             fullWidth
             variant="outlined"
+            InputLabelProps={{ style: { color: "#BDBDBD" } }}
+            InputProps={{ style: { color: "#E0E0E0" } }}
           >
             <MenuItem value="EMPLOYEE">Employee</MenuItem>
             <MenuItem value="MANAGER">Manager</MenuItem>
             <MenuItem value="ADMIN">Admin</MenuItem>
           </TextField>
-
-          {/* Manager/Admin Dropdown */}
           <TextField
             select
             label="Assign Manager"
@@ -160,6 +165,8 @@ const EditUserProfile = ({ open, onClose }) => {
             onChange={handleChange}
             fullWidth
             variant="outlined"
+            InputLabelProps={{ style: { color: "#BDBDBD" } }}
+            InputProps={{ style: { color: "#E0E0E0" } }}
           >
             <MenuItem value="">None</MenuItem>
             {managers.map((manager) => (
@@ -168,21 +175,47 @@ const EditUserProfile = ({ open, onClose }) => {
               </MenuItem>
             ))}
           </TextField>
-        </Box>
+        </Stack>
       </DialogContent>
 
       <DialogActions
         sx={{
-          justifyContent: "space-between",
-          borderTop: "1px solid #ccc",
+          borderTop: "1px solid #444",
           mt: 2,
           pt: 2,
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        <Button onClick={onClose} color="inherit" variant="outlined">
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="inherit"
+          sx={{
+            textTransform: "none",
+            px: 3,
+            color: "#e0e0e0",
+            borderColor: "#757575",
+            "&:hover": {
+              backgroundColor: "#3a3a3a",
+              borderColor: "#bdbdbd",
+            },
+          }}
+        >
           Cancel
         </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            textTransform: "none",
+            px: 4,
+            backgroundColor: "#1976d2",
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
+        >
           Save
         </Button>
       </DialogActions>
@@ -207,7 +240,7 @@ export default EditUserProfile;
 //   fetchUserById,
 //   fetchManagersOrAdmins,
 //   updateUser,
-// } from "../service/userService";
+// } from '../../service/userService'; // Adjust the import path as necessary
 
 // const EditUserProfile = ({ open, onClose }) => {
 //   const [formData, setFormData] = useState({
@@ -259,6 +292,15 @@ export default EditUserProfile;
 //       ...prev,
 //       [name]: name === "managerId" ? (value ? Number(value) : null) : value,
 //     }));
+
+//     // Auto-load managers/admins if role changes
+//     if (name === "role") {
+//       loadManagersOrAdmins(value);
+//       setFormData((prev) => ({
+//         ...prev,
+//         managerId: "", // Reset manager on role change
+//       }));
+//     }
 //   };
 
 //   const handleSubmit = async () => {
@@ -284,7 +326,7 @@ export default EditUserProfile;
 //           borderRadius: 4,
 //           boxShadow: 6,
 //           p: 2,
-//           backgroundColor: "#f9f9f9", // Light neutral background
+//           backgroundColor: "#f9f9f9",
 //         },
 //       }}
 //     >
@@ -318,14 +360,21 @@ export default EditUserProfile;
 //             fullWidth
 //             variant="outlined"
 //           />
+
+//           {/* Role Dropdown */}
 //           <TextField
-//             name="role"
+//             select
 //             label="Role"
+//             name="role"
 //             value={formData.role}
-//             disabled
+//             onChange={handleChange}
 //             fullWidth
 //             variant="outlined"
-//           />
+//           >
+//             <MenuItem value="EMPLOYEE">Employee</MenuItem>
+//             <MenuItem value="MANAGER">Manager</MenuItem>
+//             <MenuItem value="ADMIN">Admin</MenuItem>
+//           </TextField>
 
 //           {/* Manager/Admin Dropdown */}
 //           <TextField
@@ -365,158 +414,6 @@ export default EditUserProfile;
 //         </Button>
 //       </DialogActions>
 //     </Dialog>
-//   );
-// };
-
-// export default EditUserProfile;
-
-// import React, { useState, useEffect } from "react";
-// import {
-//   IconButton,
-//   Dialog,
-//   DialogTitle,
-//   DialogContent,
-//   DialogActions,
-//   TextField,
-//   Button,
-//   MenuItem,
-// } from "@mui/material";
-// import MenuIcon from "@mui/icons-material/Menu";
-// import {
-//   fetchUserById,
-//   fetchManagersOrAdmins,
-//   updateUser,
-// } from "../service/userService";
-
-// const EditUserProfile = () => {
-//   const [openEditProfile, setOpenEditProfile] = useState(false);
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     email: "",
-//     role: "",
-//     managerId: "",
-//   });
-//   const [managers, setManagers] = useState([]);
-
-//   const userId = sessionStorage.getItem("userId");
-//   const token = sessionStorage.getItem("token");
-
-//   const handleOpenEditProfile = () => {
-//     setOpenEditProfile(true);
-//     loadUserData();
-//   };
-
-//   const handleCloseEditProfile = () => {
-//     setOpenEditProfile(false);
-//   };
-
-//   const loadUserData = async () => {
-//     try {
-//       const data = await fetchUserById(userId, token);
-//       setFormData({
-//         name: data.name,
-//         email: data.email,
-//         role: data.role,
-//         managerId: data.managerId || "",
-//       });
-//       loadManagersOrAdmins(data.role);
-//     } catch (error) {
-//       console.error(error);
-//       alert(error.message);
-//     }
-//   };
-
-//   const loadManagersOrAdmins = async (role) => {
-//     try {
-//       const data = await fetchManagersOrAdmins(role, token);
-//       setManagers(data);
-//     } catch (error) {
-//       console.error(error);
-//       alert(error.message);
-//     }
-//   };
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSubmit = async () => {
-//     try {
-//       await updateUser(userId, formData, token);
-//       alert("User updated successfully!");
-//       handleCloseEditProfile();
-//     } catch (error) {
-//       console.error(error);
-//       alert(error.message);
-//     }
-//   };
-
-//   return (
-//     <>
-//       <IconButton
-//         size="large"
-//         edge="start"
-//         color="inherit"
-//         sx={{ mr: 2 }}
-//         onClick={handleOpenEditProfile}
-//       >
-//         <MenuIcon />
-//       </IconButton>
-
-//       <Dialog open={openEditProfile} onClose={handleCloseEditProfile}>
-//         <DialogTitle>Edit User Profile</DialogTitle>
-//         <DialogContent
-//           sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-//         >
-//           <TextField
-//             name="name"
-//             label="Name"
-//             value={formData.name}
-//             onChange={handleChange}
-//             fullWidth
-//           />
-//           <TextField
-//             name="email"
-//             label="Email"
-//             value={formData.email}
-//             onChange={handleChange}
-//             fullWidth
-//           />
-//           <TextField
-//             name="role"
-//             label="Role"
-//             value={formData.role}
-//             disabled
-//             fullWidth
-//           />
-
-//           {/* Manager/Admin Dropdown */}
-//           {formData.role === "EMPLOYEE" || formData.role === "MANAGER" ? (
-//             <TextField
-//               select
-//               label="Assign Manager"
-//               name="managerId"
-//               value={formData.managerId}
-//               onChange={handleChange}
-//               fullWidth
-//             >
-//               {managers.map((manager) => (
-//                 <MenuItem key={manager.id} value={manager.id}>
-//                   {manager.name}
-//                 </MenuItem>
-//               ))}
-//             </TextField>
-//           ) : null}
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={handleCloseEditProfile}>Cancel</Button>
-//           <Button onClick={handleSubmit} variant="contained" color="primary">
-//             Save
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </>
 //   );
 // };
 

@@ -9,6 +9,7 @@ import ForgotPassword from './components/login/ForgotPassword';
 import RegisterForm from './components/login/RegisterForm';
 import TeamMemberTable from './components/manager/TeamMemberTable';
 import PendingTimesheetDialog from './components/manager/PendingTimesheetDialog';
+import ADashboard from './components/Admin/ADashboard';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/mdashboard" element={<MDashboard />} />
         <Route path="/edashboard" element={<EDashboard />} />
+        <Route path="/adashboard" element={<ADashboard />} />
         <Route path="/create" element={<CreateTimesheet />} />
         <Route path="/draft-timesheets" element={<DraftTimesheetTable />} />
         <Route path="/update-timesheet/:id" element={<UpdateTimesheet />} />

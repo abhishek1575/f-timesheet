@@ -71,29 +71,92 @@ export default function CreateTimesheet({ onCancel }) {
     return Object.keys(newErrors).length === 0;
   };
   
+  // const saveDraft = async () => {
+  //   try {
+  //     const response = await createTimesheet(timesheet);
+  //     localStorage.setItem("draftTimesheet", JSON.stringify(timesheet));
+  //     localStorage.setItem("draftTimesheetId", response.id);
+  //     setTimesheetId(response.id);
+  //     alert("Draft saved with ID: " + response.id);
+  //     onCancel(); // Close the dialog after successful draft save
+  //   } catch {
+  //     alert("Failed to save draft.");
+  //   }
+  // };
+
   const saveDraft = async () => {
     try {
       const response = await createTimesheet(timesheet);
       localStorage.setItem("draftTimesheet", JSON.stringify(timesheet));
       localStorage.setItem("draftTimesheetId", response.id);
       setTimesheetId(response.id);
-      alert("Draft saved with ID: " + response.id);
-      onCancel(); // Close the dialog after successful draft save
+
+      // Show alert and reset
+      alert("Draft saved successfully with ID: " + response.id);
+
+      // Clear form and close dialog
+      setTimesheet({
+        taskName: "",
+        project: "",
+        startDate: "",
+        endDate: "",
+        effort: "",
+        comments: "",
+      });
+      setErrors({});
+      onCancel();
     } catch {
       alert("Failed to save draft.");
     }
   };
 
 
-  const handleSubmit = async () => {
-    if (!validate()) return;
 
-    // Check today's day for submission
-    // const todayDay = new Date().getDay();
-    // if (todayDay !== 1 && todayDay !== 2) {
-    //   alert("You can only submit timesheets on Monday or Tuesday.");
-    //   return;
-    // }
+  // const handleSubmit = async () => {
+  //   if (!validate()) return;
+
+  //   // Check today's day for submission
+  //   // const todayDay = new Date().getDay();
+  //   // if (todayDay !== 1 && todayDay !== 2) {
+  //   //   alert("You can only submit timesheets on Monday or Tuesday.");
+  //   //   return;
+  //   // }
+
+  //   try {
+  //     let id = timesheetId;
+  //     if (!id) {
+  //       const response = await createTimesheet(timesheet);
+  //       id = response.id;
+  //       localStorage.setItem("draftTimesheetId", id);
+  //       setTimesheetId(id);
+  //     }
+  //     await submitTimesheet(id);
+  //     localStorage.removeItem("draftTimesheet");
+  //     localStorage.removeItem("draftTimesheetId");
+  //     alert("Timesheet submitted successfully!");
+  //     setTimesheet({
+  //       taskName: "",
+  //       project: "",
+  //       startDate: "",
+  //       endDate: "",
+  //       effort: "",
+  //       comments: "",
+  //     });
+  //     setErrors({});
+  //   } catch {
+  //     alert("Failed to submit timesheet.");
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    
+    if (!validate()) return;
+   // Check today's day for submission
+    const todayDay = new Date().getDay();
+    if (todayDay !== 1 && todayDay !== 2) {
+      alert("You can only submit timesheets on Monday or Tuesday.");
+      return;
+    }
 
     try {
       let id = timesheetId;
@@ -106,7 +169,10 @@ export default function CreateTimesheet({ onCancel }) {
       await submitTimesheet(id);
       localStorage.removeItem("draftTimesheet");
       localStorage.removeItem("draftTimesheetId");
+
       alert("Timesheet submitted successfully!");
+
+      // Clear form and close dialog
       setTimesheet({
         taskName: "",
         project: "",
@@ -116,10 +182,12 @@ export default function CreateTimesheet({ onCancel }) {
         comments: "",
       });
       setErrors({});
+      onCancel();
     } catch {
       alert("Failed to submit timesheet.");
     }
   };
+
   
   
   const today = new Date().toISOString().split("T")[0];

@@ -137,7 +137,9 @@ function Login() {
           case "MANAGER":
             navigate("/mdashboard");
             break;
-          
+          case "ADMIN":
+            navigate("/adashboard");
+            break;
           default:
             throw new Error("Unknown role");
         }

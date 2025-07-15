@@ -173,3 +173,34 @@ export const rejectTimesheetById = async (id, remark) => {
     }
   );
 };
+
+export const resubmitTimesheet = async (timesheetId) => {
+  const token = sessionStorage.getItem("token");
+  try {
+    const response = await axios.put(
+      `${config.BASE_URL}sheets/${timesheetId}/resubmit`,
+      {}, // No body required
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Resubmit API Error:", error);
+    throw error;
+  }
+};
+
+
+export const fetchAllEmployeeTimesheets = async (token) => {
+  const response = await axios.get(
+    `${API_BASE}/admin/all-employee-timesheets`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return response.data;
+};

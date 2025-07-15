@@ -3,7 +3,6 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  Typography,
   Box,
   Menu,
   MenuItem,
@@ -14,47 +13,34 @@ import {
   Button,
   Tooltip,
 } from "@mui/material";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import GroupsIcon from "@mui/icons-material/Groups";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../component/ChangePasswordModal";
-import AddBoxSharpIcon from "@mui/icons-material/AddBoxSharp";
-import CreateTimesheet from "../component/CreateTimesheet";
-import DraftsIcon from "@mui/icons-material/Drafts";
 import EditUserProfile from "../component/EditUserProfile";
-import CancelIcon from "@mui/icons-material/Cancel";
-import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
+import NotificationBadge from "../component/NotificationBadge";
+import config from "../../service/config";
+import PendingTimesheetDialog from "../manager/PendingTimesheetDialog";
+import UserProfileDialog from "../component/UserProfileDialog";
 
-export default function Navbar() {
+export default function ANavbar() {
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openChangePasswordModal, setOpenChangePasswordModal] = useState(false);
   const [openLogoutConfirm, setOpenLogoutConfirm] = useState(false);
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
-
   const [open, setOpen] = useState(false);
-  const handleOpenTimesheet = () => setOpen(true);
-  const handleCloseTimesheet = () => setOpen(false);
-
   const [isUserDialogOpen, setUserDialogOpen] = useState(false);
   const openUserDialog = () => setUserDialogOpen(true);
   const closeUserDialog = () => setUserDialogOpen(false);
+  const [pendingTimesheets, setPendingTimesheets] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogSource, setDialogSource] = useState("");
 
-  const [rejectedDialogOpen, setRejectedDialogOpen] = useState(false);
-
-
-  // Navigate to Draft Timesheets
 
   const navigate = useNavigate();
-  const handleDraftClick = () => {
-    navigate("/draft-timesheets");
-  };
-
-  // Load user details from sessionStorage
-  const userName = sessionStorage.getItem("Name") || "N/A";
-  const userEmail = sessionStorage.getItem("Email") || "N/A";
-  const userRole = sessionStorage.getItem("Role") || "N/A";
-  const userManager = sessionStorage.getItem("Manager") || "N/A";
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -78,6 +64,10 @@ export default function Navbar() {
     handleCloseMenu();
   };
 
+  const handleOpenProfile = () => {
+    setOpenProfileDialog(true);
+    handleCloseMenu(); // optional to close the menu
+  };
   const handleLogoutConfirm = () => {
     sessionStorage.clear();
     localStorage.clear();
@@ -89,15 +79,28 @@ export default function Navbar() {
     setOpenLogoutConfirm(false);
   };
 
-  const handleOpenProfile = () => {
-    setOpenProfileDialog(true);
-    handleCloseMenu();
-  };
 
   const handleCloseProfileDialog = () => {
     setOpenProfileDialog(false);
   };
 
+  
+  const fetchPendingTimesheets = async () => {
+    const token = sessionStorage.getItem("token")
+    const res = await fetch(`${config.BASE_URL}sheets/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setPendingTimesheets(data);
+  };
+
+
+  const handleNotificationClick = async () => {
+    await fetchPendingTimesheets();
+    setDialogSource("notification");
+    setDialogOpen(true);
+  };
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -121,33 +124,32 @@ export default function Navbar() {
           </Tooltip>
 
           <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-            <Tooltip title="Add Timesheet" arrow placement="bottom">
+            <Tooltip title="Team Members" arrow placement="bottom">
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={handleOpenTimesheet}
+                onClick={() => navigate("/team-members")}
               >
-                <AddBoxSharpIcon />
+                <GroupsIcon />
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="View Drafts" arrow placement="bottom">
+            <Tooltip title="Approve Requests" arrow placement="bottom">
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={handleDraftClick}
+                onClick={handleNotificationClick}
               >
-                <DraftsIcon />
+                <FactCheckIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Reject Timesheet" arrow placement="bottom">
-              <IconButton onClick={() => setRejectedDialogOpen(true)}>
-                <CancelIcon color="error" />
-              </IconButton>
-            </Tooltip>
+
+            {/* Notification Button with Popover */}
           </Box>
           {auth && (
             <>
+              <NotificationBadge />
+
               <IconButton size="large" onClick={handleMenu} color="inherit">
                 <AccountCircle />
               </IconButton>
@@ -157,6 +159,7 @@ export default function Navbar() {
                 onClose={handleCloseMenu}
               >
                 <MenuItem onClick={handleOpenProfile}>Profile</MenuItem>
+
                 <MenuItem onClick={handleOpenChangePasswordModal}>
                   Change Password
                 </MenuItem>
@@ -167,30 +170,11 @@ export default function Navbar() {
                 open={openChangePasswordModal}
                 onClose={handleCloseChangePasswordModal}
               />
-              {/* Profile Dialog */}
-              <Dialog
-                open={openProfileDialog}
-                onClose={handleCloseProfileDialog}
-              >
-                <DialogTitle>User Profile</DialogTitle>
-                <DialogContent>
-                  <Typography>
-                    <strong>Name:</strong> {userName}
-                  </Typography>
-                  <Typography>
-                    <strong>Email:</strong> {userEmail}
-                  </Typography>
-                  <Typography>
-                    <strong>Role:</strong> {userRole}
-                  </Typography>
-                  <Typography>
-                    <strong>Manager:</strong> {userManager}
-                  </Typography>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleCloseProfileDialog}>Close</Button>
-                </DialogActions>
-              </Dialog>
+
+              <UserProfileDialog
+                openProfileDialog={openProfileDialog}
+                handleCloseProfileDialog={handleCloseProfileDialog}
+              />
               {/* Logout Confirmation Dialog */}
               <Dialog open={openLogoutConfirm} onClose={handleLogoutCancel}>
                 <DialogTitle>Confirm Logout</DialogTitle>
@@ -232,30 +216,22 @@ export default function Navbar() {
                     width: "100%",
                     height: "100%",
                   }}
-                >
-                  <CreateTimesheet onCancel={handleCloseTimesheet} />
-                </Box>
+                ></Box>
               </Dialog>
               <EditUserProfile
                 open={isUserDialogOpen}
                 onClose={closeUserDialog}
               />
-              {/* <RejectedTimesheetDialog
-                open={rejectedDialogOpen}
-                onClose={() => setRejectedDialogOpen(false)}
-                
-              /> */}
-              <RejectedTimesheetDialog
-                open={rejectedDialogOpen}
-                onClose={(event, reason) => {
-                  // Prevent closing on backdrop click or ESC key
-                  if (
-                    reason !== "backdropClick" &&
-                    reason !== "escapeKeyDown"
-                  ) {
-                    setRejectedDialogOpen(false);
-                  }
-                }}
+
+              <PendingTimesheetDialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                timesheets={pendingTimesheets}
+                title={
+                  dialogSource === "notification"
+                    ? "Your Pending Timesheets"
+                    : "Pending Approval Requests"
+                }
               />
             </>
           )}

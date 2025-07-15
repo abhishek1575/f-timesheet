@@ -28,6 +28,8 @@ import EditUserProfile from "../component/EditUserProfile";
 import NotificationBadge from "../component/NotificationBadge";
 import config from "../../service/config";
 import PendingTimesheetDialog from "./PendingTimesheetDialog";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
 
 export default function MNavbar() {
   const [auth, setAuth] = useState(true);
@@ -45,6 +47,7 @@ export default function MNavbar() {
   const closeUserDialog = () => setUserDialogOpen(false);
 
   const [pendingTimesheets, setPendingTimesheets] = useState([]);
+  const [rejectedDialogOpen, setRejectedDialogOpen] = useState(false);
 
   // Navigate to Draft Timesheets
 
@@ -182,15 +185,6 @@ export default function MNavbar() {
               </IconButton>
             </Tooltip>
 
-            {/* <Tooltip title="Approve Requests" arrow placement="bottom">
-              <IconButton
-                size="large"
-                color="inherit"
-                onClick={() => setApprovalDialogOpen(true)}
-              >
-                <FactCheckIcon />
-              </IconButton>
-            </Tooltip> */}
             <Tooltip title="Approve Requests" arrow placement="bottom">
               <IconButton
                 size="large"
@@ -200,13 +194,17 @@ export default function MNavbar() {
                 <FactCheckIcon />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Reject Timesheet" arrow placement="bottom">
+              <IconButton onClick={() => setRejectedDialogOpen(true)}>
+                <CancelIcon color="error" />
+              </IconButton>
+            </Tooltip>
 
             {/* Notification Button with Popover */}
           </Box>
           {auth && (
             <>
-              <NotificationBadge  />
-              
+              <NotificationBadge />
 
               <IconButton size="large" onClick={handleMenu} color="inherit">
                 <AccountCircle />
@@ -301,17 +299,6 @@ export default function MNavbar() {
                 onClose={closeUserDialog}
               />
 
-              {/* <PendingTimesheetDialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                timesheets={pendingTimesheets}
-              /> */}
-              {/* <PendingTimesheetDialog
-                open={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                timesheets={pendingTimesheets}
-                title="Pending Approval Requests"
-              /> */}
               <PendingTimesheetDialog
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
@@ -323,24 +310,18 @@ export default function MNavbar() {
                 }
               />
 
-              {/* <Dialog
-                open={approvalDialogOpen}
-                onClose={() => setApprovalDialogOpen(false)}
-                fullWidth
-                maxWidth="md"
-              >
-                <DialogTitle>Approval Requests</DialogTitle>
-                <DialogContent>
-                  <Typography>
-                    Here you can display pending approval requests...
-                  </Typography>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setApprovalDialogOpen(false)}>
-                    Close
-                  </Button>
-                </DialogActions>
-              </Dialog> */}
+              <RejectedTimesheetDialog
+                open={rejectedDialogOpen}
+                onClose={(event, reason) => {
+                  // Prevent closing on backdrop click or ESC key
+                  if (
+                    reason !== "backdropClick" &&
+                    reason !== "escapeKeyDown"
+                  ) {
+                    setRejectedDialogOpen(false);
+                  }
+                }}
+              />
             </>
           )}
         </Toolbar>
