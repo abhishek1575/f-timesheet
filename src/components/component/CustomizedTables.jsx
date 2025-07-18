@@ -239,7 +239,7 @@ export default function CustomizedTables() {
                   <StyledTableCell align="right">
                     {sheet.project}
                   </StyledTableCell>
-                  <StyledTableCell align="right">
+                  <StyledTableCell align="left">
                     {sheet.taskName}
                   </StyledTableCell>
                   <StyledTableCell align="right">

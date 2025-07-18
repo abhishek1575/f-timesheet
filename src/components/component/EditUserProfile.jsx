@@ -7,14 +7,13 @@ import {
   TextField,
   Button,
   MenuItem,
-  Box,
   Stack,
 } from "@mui/material";
 import {
   fetchUserById,
-  fetchManagersOrAdmins,
   updateUser,
-} from "../../service/userService"; // Adjust the import path if needed
+  fetchManagersOrAdmins,
+} from "../../service/userService"; // 👈 Combined imports
 
 const EditUserProfile = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
@@ -32,6 +31,25 @@ const EditUserProfile = ({ open, onClose }) => {
     if (open) loadUserData();
   }, [open]);
 
+  const getSuggestionsBasedOnRole = async (role) => {
+    if (!token) return [];
+    try {
+      if (role === "EMPLOYEE") {
+        const [admins, managers] = await Promise.all([
+          fetchManagersOrAdmins("MANAGER", token), // fetch ADMIN
+          fetchManagersOrAdmins("EMPLOYEE", token), // fetch MANAGER
+        ]);
+        return [...admins, ...managers];
+      } else if (role === "MANAGER") {
+        return await fetchManagersOrAdmins("MANAGER", token); // fetch ADMIN
+      }
+      return []; // ADMIN gets no suggestions
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      return [];
+    }
+  };
+
   const loadUserData = async () => {
     try {
       const data = await fetchUserById(userId, token);
@@ -41,35 +59,29 @@ const EditUserProfile = ({ open, onClose }) => {
         role: data.role,
         managerId: data.managerId || "",
       });
-      loadManagersOrAdmins(data.role);
+      const suggestions = await getSuggestionsBasedOnRole(data.role);
+      setManagers(suggestions);
     } catch (error) {
       console.error(error);
       alert(error.message);
     }
   };
 
-  const loadManagersOrAdmins = async (role) => {
-    try {
-      const data = await fetchManagersOrAdmins(role, token);
-      setManagers(data);
-    } catch (error) {
-      console.error(error);
-      alert(error.message);
-    }
-  };
-
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "managerId" ? (value ? Number(value) : null) : value,
-    }));
 
     if (name === "role") {
-      loadManagersOrAdmins(value);
+      const suggestions = await getSuggestionsBasedOnRole(value);
+      setManagers(suggestions);
       setFormData((prev) => ({
         ...prev,
-        managerId: "",
+        role: value,
+        managerId: value === "ADMIN" ? null : "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === "managerId" ? (value ? Number(value) : null) : value,
       }));
     }
   };
@@ -155,26 +167,29 @@ const EditUserProfile = ({ open, onClose }) => {
             <MenuItem value="MANAGER">Manager</MenuItem>
             <MenuItem value="ADMIN">Admin</MenuItem>
           </TextField>
-          <TextField
-            select
-            label="Assign Manager"
-            name="managerId"
-            value={
-              formData.managerId !== null ? String(formData.managerId) : ""
-            }
-            onChange={handleChange}
-            fullWidth
-            variant="outlined"
-            InputLabelProps={{ style: { color: "#BDBDBD" } }}
-            InputProps={{ style: { color: "#E0E0E0" } }}
-          >
-            <MenuItem value="">None</MenuItem>
-            {managers.map((manager) => (
-              <MenuItem key={manager.id} value={String(manager.id)}>
-                {manager.name}
-              </MenuItem>
-            ))}
-          </TextField>
+
+          {(formData.role === "EMPLOYEE" || formData.role === "MANAGER") && (
+            <TextField
+              select
+              label="Assign Manager"
+              name="managerId"
+              value={
+                formData.managerId !== null ? String(formData.managerId) : ""
+              }
+              onChange={handleChange}
+              fullWidth
+              variant="outlined"
+              InputLabelProps={{ style: { color: "#BDBDBD" } }}
+              InputProps={{ style: { color: "#E0E0E0" } }}
+            >
+              <MenuItem value="">None</MenuItem>
+              {managers.map((manager) => (
+                <MenuItem key={manager.id} value={String(manager.id)}>
+                  {manager.name} ({manager.role})
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
         </Stack>
       </DialogContent>
 
@@ -235,12 +250,13 @@ export default EditUserProfile;
 //   Button,
 //   MenuItem,
 //   Box,
+//   Stack,
 // } from "@mui/material";
 // import {
 //   fetchUserById,
 //   fetchManagersOrAdmins,
 //   updateUser,
-// } from '../../service/userService'; // Adjust the import path as necessary
+// } from "../../service/userService"; // Adjust the import path if needed
 
 // const EditUserProfile = ({ open, onClose }) => {
 //   const [formData, setFormData] = useState({
@@ -255,9 +271,7 @@ export default EditUserProfile;
 //   const token = sessionStorage.getItem("token");
 
 //   useEffect(() => {
-//     if (open) {
-//       loadUserData();
-//     }
+//     if (open) loadUserData();
 //   }, [open]);
 
 //   const loadUserData = async () => {
@@ -276,29 +290,48 @@ export default EditUserProfile;
 //     }
 //   };
 
-//   const loadManagersOrAdmins = async (role) => {
-//     try {
-//       const data = await fetchManagersOrAdmins(role, token);
-//       setManagers(data);
-//     } catch (error) {
-//       console.error(error);
-//       alert(error.message);
-//     }
-//   };
+//  const loadManagersOrAdmins = async (role) => {
+//    try {
+//      let potentialManagers = [];
+//      if (role === "EMPLOYEE") {
+//        const managersList = await fetchManagersOrAdmins("MANAGER", token);
+//        const adminsList = await fetchManagersOrAdmins("ADMIN", token);
+//        const combinedList = [...managersList, ...adminsList];
+//        const uniqueManagers = combinedList.reduce((acc, current) => {
+//          if (!acc.find((item) => item.id === current.id)) {
+//            acc.push(current);
+//          }
+//          return acc;
+//        }, []);
+//        potentialManagers = uniqueManagers;
+//      } else if (role === "MANAGER") {
+//        potentialManagers = await fetchManagersOrAdmins("ADMIN", token);
+//      } else {
+//        // If ADMIN role, no need for manager suggestion
+//        potentialManagers = [];
+//      }
+
+//      setManagers(potentialManagers);
+//    } catch (error) {
+//      console.error("Failed to load managers/admins:", error);
+//      alert("Could not load the list of supervisors. Please try again.");
+//    }
+//  };
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: name === "managerId" ? (value ? Number(value) : null) : value,
-//     }));
 
-//     // Auto-load managers/admins if role changes
 //     if (name === "role") {
 //       loadManagersOrAdmins(value);
 //       setFormData((prev) => ({
 //         ...prev,
-//         managerId: "", // Reset manager on role change
+//         role: value,
+//         managerId: value === "ADMIN" ? null : "",
+//       }));
+//     } else {
+//       setFormData((prev) => ({
+//         ...prev,
+//         [name]: name === "managerId" ? (value ? Number(value) : null) : value,
 //       }));
 //     }
 //   };
@@ -317,33 +350,38 @@ export default EditUserProfile;
 //   return (
 //     <Dialog
 //       open={open}
-//       onClose={onClose}
+//       onClose={(event, reason) => {
+//         if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+//           onClose();
+//         }
+//       }}
 //       maxWidth="sm"
 //       fullWidth
 //       PaperProps={{
 //         sx: {
-//           minHeight: "300px",
-//           borderRadius: 4,
-//           boxShadow: 6,
-//           p: 2,
-//           backgroundColor: "#f9f9f9",
+//           borderRadius: 3,
+//           backgroundColor: "#2e2e2e",
+//           color: "#f0f0f0",
+//           px: 3,
+//           py: 2,
 //         },
 //       }}
 //     >
 //       <DialogTitle
 //         sx={{
 //           fontWeight: "bold",
+//           fontSize: "1.25rem",
 //           textAlign: "center",
-//           borderBottom: "1px solid #ccc",
+//           color: "#e0e0e0",
+//           borderBottom: "1px solid #444",
 //           pb: 1,
-//           mb: 2,
 //         }}
 //       >
-//         Edit User Profile
+//         ✏️ Edit User Profile
 //       </DialogTitle>
 
-//       <DialogContent sx={{ mt: 2 }}>
-//         <Box display="flex" flexDirection="column" gap={2}>
+//       <DialogContent>
+//         <Stack spacing={2} mt={2}>
 //           <TextField
 //             name="name"
 //             label="Name"
@@ -351,6 +389,8 @@ export default EditUserProfile;
 //             onChange={handleChange}
 //             fullWidth
 //             variant="outlined"
+//             InputLabelProps={{ style: { color: "#BDBDBD" } }}
+//             InputProps={{ style: { color: "#E0E0E0" } }}
 //           />
 //           <TextField
 //             name="email"
@@ -359,9 +399,9 @@ export default EditUserProfile;
 //             onChange={handleChange}
 //             fullWidth
 //             variant="outlined"
+//             InputLabelProps={{ style: { color: "#BDBDBD" } }}
+//             InputProps={{ style: { color: "#E0E0E0" } }}
 //           />
-
-//           {/* Role Dropdown */}
 //           <TextField
 //             select
 //             label="Role"
@@ -370,46 +410,76 @@ export default EditUserProfile;
 //             onChange={handleChange}
 //             fullWidth
 //             variant="outlined"
+//             InputLabelProps={{ style: { color: "#BDBDBD" } }}
+//             InputProps={{ style: { color: "#E0E0E0" } }}
 //           >
 //             <MenuItem value="EMPLOYEE">Employee</MenuItem>
 //             <MenuItem value="MANAGER">Manager</MenuItem>
 //             <MenuItem value="ADMIN">Admin</MenuItem>
 //           </TextField>
-
-//           {/* Manager/Admin Dropdown */}
-//           <TextField
-//             select
-//             label="Assign Manager"
-//             name="managerId"
-//             value={
-//               formData.managerId !== null ? String(formData.managerId) : ""
-//             }
-//             onChange={handleChange}
-//             fullWidth
-//             variant="outlined"
-//           >
-//             <MenuItem value="">None</MenuItem>
-//             {managers.map((manager) => (
-//               <MenuItem key={manager.id} value={String(manager.id)}>
-//                 {manager.name}
-//               </MenuItem>
-//             ))}
-//           </TextField>
-//         </Box>
+//           {(formData.role === "EMPLOYEE" || formData.role === "MANAGER") && (
+//             <TextField
+//               select
+//               label="Assign Manager"
+//               name="managerId"
+//               value={
+//                 formData.managerId !== null ? String(formData.managerId) : ""
+//               }
+//               onChange={handleChange}
+//               fullWidth
+//               variant="outlined"
+//               InputLabelProps={{ style: { color: "#BDBDBD" } }}
+//               InputProps={{ style: { color: "#E0E0E0" } }}
+//             >
+//               <MenuItem value="">None</MenuItem>
+//               {managers.map((manager) => (
+//                 <MenuItem key={manager.id} value={String(manager.id)}>
+//                   {manager.name}
+//                 </MenuItem>
+//               ))}
+//             </TextField>
+//           )}
+//         </Stack>
 //       </DialogContent>
 
 //       <DialogActions
 //         sx={{
-//           justifyContent: "space-between",
-//           borderTop: "1px solid #ccc",
+//           borderTop: "1px solid #444",
 //           mt: 2,
 //           pt: 2,
+//           display: "flex",
+//           justifyContent: "space-between",
 //         }}
 //       >
-//         <Button onClick={onClose} color="inherit" variant="outlined">
+//         <Button
+//           onClick={onClose}
+//           variant="outlined"
+//           color="inherit"
+//           sx={{
+//             textTransform: "none",
+//             px: 3,
+//             color: "#e0e0e0",
+//             borderColor: "#757575",
+//             "&:hover": {
+//               backgroundColor: "#3a3a3a",
+//               borderColor: "#bdbdbd",
+//             },
+//           }}
+//         >
 //           Cancel
 //         </Button>
-//         <Button onClick={handleSubmit} variant="contained" color="primary">
+//         <Button
+//           onClick={handleSubmit}
+//           variant="contained"
+//           sx={{
+//             textTransform: "none",
+//             px: 4,
+//             backgroundColor: "#1976d2",
+//             "&:hover": {
+//               backgroundColor: "#1565c0",
+//             },
+//           }}
+//         >
 //           Save
 //         </Button>
 //       </DialogActions>

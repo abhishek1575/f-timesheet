@@ -1,13 +1,11 @@
 import CustomizedTables from "../component/CustomizedTables";
 import Navbar from "./Navbar";
-import React from "react";
 
-const EDashboard = () => {
+export default function ADashboard() {
   return (
-    <div>
+    <>
       <Navbar />
       <CustomizedTables />
-    </div>
+    </>
   );
-};
-export default EDashboard;
+}
