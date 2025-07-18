@@ -24,6 +24,7 @@ import DraftsIcon from "@mui/icons-material/Drafts";
 import EditUserProfile from "../component/EditUserProfile";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
+import UserProfileDialog from "../component/UserProfileDialog";
 
 export default function Navbar() {
   const [auth, setAuth] = useState(true);
@@ -50,11 +51,6 @@ export default function Navbar() {
     navigate("/draft-timesheets");
   };
 
-  // Load user details from sessionStorage
-  const userName = sessionStorage.getItem("Name") || "N/A";
-  const userEmail = sessionStorage.getItem("Email") || "N/A";
-  const userRole = sessionStorage.getItem("Role") || "N/A";
-  const userManager = sessionStorage.getItem("Manager") || "N/A";
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -89,14 +85,14 @@ export default function Navbar() {
     setOpenLogoutConfirm(false);
   };
 
-  const handleOpenProfile = () => {
-    setOpenProfileDialog(true);
-    handleCloseMenu();
-  };
+   const handleOpenProfile = () => {
+     setOpenProfileDialog(true);
+     handleCloseMenu(); // optional to close the menu
+   };
 
-  const handleCloseProfileDialog = () => {
-    setOpenProfileDialog(false);
-  };
+   const handleCloseProfileDialog = () => {
+     setOpenProfileDialog(false);
+   };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -168,7 +164,7 @@ export default function Navbar() {
                 onClose={handleCloseChangePasswordModal}
               />
               {/* Profile Dialog */}
-              <Dialog
+              {/* <Dialog
                 open={openProfileDialog}
                 onClose={handleCloseProfileDialog}
               >
@@ -190,7 +186,12 @@ export default function Navbar() {
                 <DialogActions>
                   <Button onClick={handleCloseProfileDialog}>Close</Button>
                 </DialogActions>
-              </Dialog>
+              </Dialog> */}
+              <UserProfileDialog
+                openProfileDialog={openProfileDialog}
+                handleCloseProfileDialog={handleCloseProfileDialog}
+              />
+
               {/* Logout Confirmation Dialog */}
               <Dialog open={openLogoutConfirm} onClose={handleLogoutCancel}>
                 <DialogTitle>Confirm Logout</DialogTitle>

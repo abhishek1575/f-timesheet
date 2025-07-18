@@ -1,12 +1,12 @@
 import CustomizedTables from "../component/CustomizedTables";
-import ANavbar from "./ANavbar";
+import ANavbar2 from "./ANavbar2";
 
 
 export default function ADashboard() {
   return (
     <>
-      <ANavbar />
-      <CustomizedTables />
+      <ANavbar2 />
+      {/* <CustomizedTables /> */}
     </>
   );
 }

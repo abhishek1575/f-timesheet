@@ -1,28 +1,35 @@
-import config from "./config";
-// src/Services/ForgotPasswordServices.js
-const forgotPasswordUrl = `${config.BASE_URL}auth/forgetPassword`;
+// forgotPasswordUrl.js
 
-const resetPassword = async (email, newPassword) => {
+import config from "./config";
+
+export const resetPassword = async (email, newPassword) => {
   try {
-    const response = await fetch(forgotPasswordUrl, {
+    const response = await fetch(`${config.BASE_URL}auth/forgotPassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, newPassword }),
+      body: JSON.stringify({ email, password: newPassword }),
     });
 
+    const contentType = response.headers.get("content-type");
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to reset password.");
+      const errorData = contentType?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
+      throw new Error(
+        errorData?.message || errorData || "Failed to reset password"
+      );
     }
 
-    return await response.json();
+    return contentType?.includes("application/json")
+      ? await response.json()
+      : { message: await response.text() };
   } catch (error) {
     throw new Error(
       error.message || "An error occurred while resetting the password."
     );
   }
 };
-
-export default { resetPassword };

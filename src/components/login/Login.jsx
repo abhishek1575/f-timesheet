@@ -1,135 +1,37 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../../service/AuthService";
-import { Snackbar, Alert } from "@mui/material";
-import bgImage from "../../assets/timesheet-background.jpg";
-
+import {
+  Snackbar,
+  Alert,
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Container,
+  Link,
+} from "@mui/material";
+import bgImage from "../../assets/office-background.jpg";
+import logo from "../../assets/image.png"; // Assuming this is the correct path for the logo
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // To handle error messages
-  const [showError, setShowError] = useState(false); // Snackbar visibility
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
-
-  const containerStyle = {
-    backgroundImage: `url(${bgImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    height: "100vh",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0 50px",
-    boxSizing: "border-box",
-  };
-
-  const welcomeSectionStyle = {
-    flex: 1,
-    textAlign: "left",
-  };
-
-  const logoStyle = {
-    width: "200px",
-    height: "35px",
-    marginBottom: "30px",
-  };
-
-  const headingStyle = {
-    color: "#084298",
-    fontSize: "60px",
-    margin: "10px 0",
-    textAlign: "top",
-  };
-
-
-  const logoContainerStyle = {
-    position: "absolute",
-    top: "20px",
-    left: "20px",
-    zIndex: 10,
-  };
-
-  const paragraphStyle = {
-    color: "#F3E5E5",
-    fontSize: "40px",
-    margin: "10px 0",
-    textAlign: "center",
-  };
-
-  const loginSectionStyle = {
-    background: "#fff",
-    padding: "30px 40px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    textAlign: "center",
-    width: "320px",
-  };
-
-  const titleStyle = {
-    color: "#333",
-    fontSize: "24px",
-    marginBottom: "20px",
-  };
-
-  const inputGroupStyle = {
-    marginBottom: "15px",
-    textAlign: "left",
-  };
-
-  const labelStyle = {
-    fontSize: "14px",
-    color: "#333",
-    marginBottom: "5px",
-    display: "block",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "10px 12px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    fontSize: "14px",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "12px 0",
-    background: "#333",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "16px",
-    cursor: "pointer",
-  };
-
-  const forgotPasswordStyle = {
-    display: "block",
-    marginTop: "10px",
-    fontSize: "14px",
-    color: "#007bff",
-    textDecoration: "none",
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await AuthService.login(email, password);
-      console.log("response is ", response, "type of", typeof response);
-
-      // debugger
+      const normalizedEmail = email.trim().toLowerCase();
+      const response = await AuthService.login(normalizedEmail, password);
       if (response.data.jwt) {
-        // Save token and role to session storage
         sessionStorage.setItem("token", response.data.jwt);
         sessionStorage.setItem("Role", response.data.role);
         sessionStorage.setItem("isLoggedIn", "true");
-
-        // Clear previous errors
         setError("");
         setShowError(false);
-
-        // Redirect based on role
         switch (response.data.role) {
           case "EMPLOYEE":
             navigate("/edashboard");
@@ -145,7 +47,6 @@ function Login() {
         }
       }
     } catch (error) {
-      // Set error message and show Snackbar
       setError(error.response?.data?.message || "Invalid email or password");
       setShowError(true);
     }
@@ -156,88 +57,95 @@ function Login() {
   };
 
   return (
-    <div style={containerStyle}>
+    <Box
+      sx={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Snackbar
         open={showError}
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        transitionDuration={0} // Disable animations
       >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="error"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: "100%" }}>
           {error}
         </Alert>
       </Snackbar>
 
-      <div style={welcomeSectionStyle}>
-        <div style={logoContainerStyle}>
-          <img
-            src="src/assets/image.png"
-            alt="Ceinsys Logo"
-            style={logoStyle}
-          />
-        </div>
-        <h1 style={headingStyle}>Welcome to Ceinsys</h1>
-        <p style={paragraphStyle}></p>
-      </div>
-
-      <div style={loginSectionStyle}>
-        <h2 style={titleStyle}>Login Here</h2>
-        <form onSubmit={handleLogin}>
-          <div style={inputGroupStyle}>
-            <label htmlFor="email" style={labelStyle}>
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="Input"
-              style={inputStyle}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div style={inputGroupStyle}>
-            <label htmlFor="password" style={labelStyle}>
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="*********"
-              style={inputStyle}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" style={buttonStyle}>
-            GET STARTED
-          </button>
-        </form>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px",
+      <Container maxWidth="xs">
+        <Box
+          sx={{
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(10px)",
+            padding: "40px",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+            textAlign: "center",
           }}
         >
-          <a href="/signup" style={forgotPasswordStyle}>
-            Sign Up
-          </a>
-          <a href="/forgotpassword" style={forgotPasswordStyle}>
-            Forgot Password?
-          </a>
-        </div>
-      </div>
-    </div>
+          <img
+            src={logo}
+            alt="Ceinsys Logo"
+            style={{ width: "200px", height: "35px", marginBottom: "20px" }}
+          />
+          <Typography component="h1" variant="h5" sx={{ color: "#084298", mb: 2 }}>
+            Welcome to Ceinsys
+          </Typography>
+          <Typography component="h2" variant="h6" sx={{ mb: 3 }}>
+            Login Here
+          </Typography>
+          <Box component="form" onSubmit={handleLogin} noValidate>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, background: "#333", '&:hover': { background: '#555' } }}
+            >
+              Get Started
+            </Button>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Link href="/signup" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
+              <Link href="/forgotpassword" variant="body2">
+                Forgot password?
+              </Link>
+            </Box>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 

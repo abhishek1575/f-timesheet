@@ -1,23 +1,21 @@
+// src/service/AuthService.js
+
 import axios from "axios";
 import Config from "./config";
 
 export const changePassword = async (oldPassword, newPassword) => {
   try {
-    // Retrieve token and id from sessionStorage
     const token = sessionStorage.getItem("token");
     const id = sessionStorage.getItem("UserId");
 
-    // Check if token and id are present
     if (!token || !id) {
-      console.error("Token or ID is missing");
       throw new Error("Token or User ID is missing");
     }
-
-    // Make API call to change password
+    console.log("Old password:", oldPassword + " new password:", newPassword + " id:", id + " token:", token);
     const response = await axios.post(
       `${Config.BASE_URL}auth/changePassword`,
       {
-        id: parseInt(id, 10), // Ensure id is sent as a number
+        id: parseInt(id, 10),
         oldPassword,
         newPassword,
       },
@@ -29,9 +27,9 @@ export const changePassword = async (oldPassword, newPassword) => {
       }
     );
 
-    return response.data; // Return response data for further handling
+    return response.data;
   } catch (error) {
     console.error("API error:", error);
-    throw error; // Re-throw for handling in Dashboard.jsx
+    throw error;
   }
 };

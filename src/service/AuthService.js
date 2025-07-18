@@ -22,7 +22,6 @@ class AuthService {
       sessionStorage.setItem("UserId", response.data.id);
       sessionStorage.setItem("Email", response.data.email);
       sessionStorage.setItem("Name", response.data.name);
-      sessionStorage.setItem("Manager", response.data.manager);
       sessionStorage.setItem("Role", response.data.role);
       sessionStorage.setItem("type", response.data.type);
       sessionStorage.setItem("token", response.data.jwt);

@@ -75,7 +75,17 @@ const TimesheetDialog = ({ open, onClose, timesheets }) => {
     .toFixed(2);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={(event, reason) => {
+        if (reason !== "backdropClick" && reason !== "escapeKeyDown") {
+          onClose();
+        }
+      }}
+      disableEscapeKeyDown
+      fullWidth
+      maxWidth="md"
+    >
       <DialogTitle>Approved Timesheet Records</DialogTitle>
       <DialogContent dividers>
         <Box

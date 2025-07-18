@@ -6,13 +6,19 @@ import {
   TextField,
   IconButton,
   InputAdornment,
-  Grid,
+  Container,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  ArrowBack as ArrowBackIcon,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import ForgotPasswordServices from "../../service/forgotPasswordUrl"; 
+import { resetPassword } from "../../service/forgotPasswordUrl";
+import bgImage from "../../assets/office-background.jpg";
+import logo from "../../assets/image.png";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -22,6 +28,9 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -33,174 +42,182 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    try {
-      if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-        toast.warning("All fields are required.");
-      } else if (password !== confirmPassword) {
-        toast.warning("Passwords do not match.");
-      } else {
-        console.log("Forgot Password jsx file email:", email, password);
-        await ForgotPasswordServices.resetPassword(email, password); // Call the API service
-        toast.success("Password changed successfully!");
-        setTimeout(() => {
-          navigate("/login"); // Redirect to login after successful password reset
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Error resetting password:", error);
-      toast.error(error.message || "Failed to reset password!");
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError("All fields are required.");
+      setShowSnackbar(true);
+      return;
     }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setShowSnackbar(true);
+      return;
+    }
+    try {
+      await resetPassword(email, password);
+      setSuccess("Password changed successfully!");
+      setShowSnackbar(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (error) {
+      setError(error.message || "Failed to reset password!");
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setShowSnackbar(false);
+    setError("");
+    setSuccess("");
   };
 
   return (
     <Box
       sx={{
-        borderRadius: "0px",
-        backdropFilter: "blur(10px)",
-        background: "linear-gradient(135deg, #3095f0, #b6bced, #fdf9fd)",
+        backgroundImage: `url(${bgImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        height: "100%",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
+        height: "100vh",
         display: "flex",
-        justifyContent: "center",
         alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Grid container spacing={0} sx={{ overflowY: "auto" }}>
-        <Grid item xs={false} md={3} lg={3} xl={3} />
-        <Grid
-          item
-          xs={12}
-          md={6}
-          lg={6}
-          xl={6}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
+          {error || success}
+        </Alert>
+      </Snackbar>
+
+      <Container maxWidth="xs">
+        <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(10px)",
+            padding: "40px",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+            textAlign: "center",
+            position: "relative",
           }}
         >
-          <Box
+          <IconButton
+            onClick={() => navigate("/login")}
             sx={{
-              bgcolor: "white",
-              boxShadow: 24,
-              p: 4,
-              width: "100%",
-              maxWidth: 400,
-              position: "relative",
-              "@media (max-width:400px)": {
-                position: "static",
-                transform: "none",
-                mx: "auto",
-              },
+              position: "absolute",
+              top: 16,
+              left: 16,
+              color: "#000000",
             }}
           >
-            {/* Logo */}
-            <div style={{ margin: "8px", textAlign: "center" }}>
-            </div>
-
-            <Typography variant="h5" component="h1" textAlign="center">
-              Forgot Password?
-            </Typography>
-
-            <Box
-              component="form"
-              noValidate
-              onSubmit={handleSubmit}
-              sx={{ mt: 1 }}
+            <ArrowBackIcon />
+          </IconButton>
+          <img
+            src={logo}
+            alt="Ceinsys Logo"
+            style={{ width: "200px", height: "35px", marginBottom: "20px" }}
+          />
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ color: "#084298", mb: 2 }}
+          >
+            Forgot Password
+          </Typography>
+          <Box
+            component="form"
+            noValidate
+            onSubmit={handleSubmit}
+            sx={{ mt: 1 }}
+          >
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Email"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              id="email"
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="New Password"
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleTogglePasswordVisibility}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm New Password"
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={handleToggleConfirmPasswordVisibility}
+                      edge="end"
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                mb: 2,
+                background: "#333",
+                "&:hover": { background: "#555" },
+              }}
             >
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="Email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoFocus
-                id="email"
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleTogglePasswordVisibility}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="confirmPassword"
-                label="Confirm Password"
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle confirm password visibility"
-                        onClick={handleToggleConfirmPasswordVisibility}
-                        edge="end"
-                      >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Button
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    mt: 1,
-                    "&:hover": {
-                      boxShadow: "0 0 10px 5px rgba(255, 255, 255, 0.5)",
-                    },
-                  }}
-                >
-                  Submit
-                </Button>
-                <ToastContainer />
-              </div>
-            </Box>
+              Reset Password
+            </Button>
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Container>
     </Box>
   );
 };

@@ -2,6 +2,7 @@
 import config from "./config";
 
 export const fetchUserById = async (userId, token) => {
+  console.log("Fetching user details for ID:", userId);
   const response = await fetch(`${config.BASE_URL}users/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -9,7 +10,8 @@ export const fetchUserById = async (userId, token) => {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch user details");
+     const errorText = await response.text();
+     throw new Error(`Failed to fetch user: ${response.status} - ${errorText}`);
   }
 
   return response.json();

@@ -24,6 +24,7 @@ import NotificationBadge from "../component/NotificationBadge";
 import config from "../../service/config";
 import PendingTimesheetDialog from "../manager/PendingTimesheetDialog";
 import UserProfileDialog from "../component/UserProfileDialog";
+import GroupIcon from "@mui/icons-material/Group";
 
 export default function ANavbar() {
   const [auth, setAuth] = useState(true);
@@ -132,6 +133,11 @@ export default function ANavbar() {
               >
                 <GroupsIcon />
               </IconButton>
+            </Tooltip>
+            <Tooltip title="View Employees Timesheet" arrow placement="bottom">
+            <IconButton size="large" color="inherit" onClick={() => navigate("/employee-list")}>
+              <GroupIcon />
+            </IconButton>
             </Tooltip>
 
             <Tooltip title="Approve Requests" arrow placement="bottom">

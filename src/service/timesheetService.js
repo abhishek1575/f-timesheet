@@ -196,11 +196,13 @@ export const resubmitTimesheet = async (timesheetId) => {
 
 
 export const fetchAllEmployeeTimesheets = async (token) => {
-  const response = await axios.get(
-    `${API_BASE}/admin/all-employee-timesheets`,
+  const response = await fetch(
+    `${config.BASE_URL}sheets/admin/all-employee-timesheets`,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
-  return response.data;
+  return await response.json();
 };

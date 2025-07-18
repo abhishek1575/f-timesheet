@@ -26,7 +26,11 @@ function App() {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/signup" element={<RegisterForm />} />
         <Route path="/team-members" element={<TeamMemberTable />} />
-        <Route path='/approval-requests' element={<PendingTimesheetDialog />} />
+        <Route path="/approval-requests" element={<PendingTimesheetDialog />} />
+        <Route
+          path="/employee-list"
+          element={<TeamMemberTable mode="ADMIN" />}
+        />
       </Routes>
     </>
   );
