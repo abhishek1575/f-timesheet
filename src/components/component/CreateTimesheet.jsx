@@ -22,14 +22,6 @@ export default function CreateTimesheet({ onCancel }) {
   });
 
   const [errors, setErrors] = useState({});
-  const [timesheetId, setTimesheetId] = useState(null);
-
-  useEffect(() => {
-    const draft = localStorage.getItem("draftTimesheet");
-    const savedId = localStorage.getItem("draftTimesheetId");
-    if (draft) setTimesheet(JSON.parse(draft));
-    if (savedId) setTimesheetId(savedId);
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -74,13 +66,8 @@ export default function CreateTimesheet({ onCancel }) {
 
   const saveDraft = async () => {
     try {
-      const response = await createTimesheet(timesheet);
-      localStorage.setItem("draftTimesheet", JSON.stringify(timesheet));
-      localStorage.setItem("draftTimesheetId", response.id);
-      setTimesheetId(response.id);
-
-      // Show alert and reset
-      alert("Draft saved successfully with ID: " + response.id);
+      await createTimesheet(timesheet);
+      alert("Draft saved successfully!");
 
       // Clear form and close dialog
       setTimesheet({
@@ -102,24 +89,10 @@ export default function CreateTimesheet({ onCancel }) {
   const handleSubmit = async () => {
     
     if (!validate()) return;
-   // Check today's day for submission
-    // const todayDay = new Date().getDay();
-    // if (todayDay !== 1 && todayDay !== 2) {
-    //   alert("You can only submit timesheets on Monday or Tuesday.");
-    //   return;
-    // }
 
     try {
-      let id = timesheetId;
-      if (!id) {
-        const response = await createTimesheet(timesheet);
-        id = response.id;
-        localStorage.setItem("draftTimesheetId", id);
-        setTimesheetId(id);
-      }
-      await submitTimesheet(id);
-      localStorage.removeItem("draftTimesheet");
-      localStorage.removeItem("draftTimesheetId");
+      const response = await createTimesheet(timesheet);
+      await submitTimesheet(response.id);
 
       alert("Timesheet submitted successfully!");
 

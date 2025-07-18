@@ -30,6 +30,7 @@ import config from "../../service/config";
 import PendingTimesheetDialog from "./PendingTimesheetDialog";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
+import UserProfileDialog from "../component/UserProfileDialog";
 
 export default function MNavbar() {
   const [auth, setAuth] = useState(true);
@@ -61,11 +62,6 @@ export default function MNavbar() {
   const [dialogSource, setDialogSource] = useState("");
 
 
-  // Load user details from sessionStorage
-  const userName = sessionStorage.getItem("Name") || "N/A";
-  const userEmail = sessionStorage.getItem("Email") || "N/A";
-  const userRole = sessionStorage.getItem("Role") || "N/A";
-  const userManager = sessionStorage.getItem("Manager") || "N/A";
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -134,6 +130,7 @@ export default function MNavbar() {
     setDialogOpen(true);
   };
   
+   
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -226,7 +223,7 @@ export default function MNavbar() {
                 onClose={handleCloseChangePasswordModal}
               />
               {/* Profile Dialog */}
-              <Dialog
+              {/* <Dialog
                 open={openProfileDialog}
                 onClose={handleCloseProfileDialog}
               >
@@ -248,7 +245,12 @@ export default function MNavbar() {
                 <DialogActions>
                   <Button onClick={handleCloseProfileDialog}>Close</Button>
                 </DialogActions>
-              </Dialog>
+              </Dialog> */}
+              <UserProfileDialog
+                openProfileDialog={openProfileDialog}
+                handleCloseProfileDialog={handleCloseProfileDialog}
+              />
+
               {/* Logout Confirmation Dialog */}
               <Dialog open={openLogoutConfirm} onClose={handleLogoutCancel}>
                 <DialogTitle>Confirm Logout</DialogTitle>
