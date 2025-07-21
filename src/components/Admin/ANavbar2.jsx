@@ -15,6 +15,8 @@ import {
   Grid,
   Card,
   CardContent,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -76,24 +78,53 @@ export default function AdminDashboard() {
   const [isUserDialogOpen, setUserDialogOpen] = useState(false);
   const [pendingTimesheets, setPendingTimesheets] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   const navigate = useNavigate();
 
   const fetchPendingTimesheets = async () => {
     try {
+      setError(null);
       const token = sessionStorage.getItem("token");
-      const res = await fetch(`${config.BASE_URL}sheets/pending`, {
+      
+      // First try the regular pending endpoint
+      let res = await fetch(`${config.BASE_URL}sheets/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      // If forbidden (403), try the all sheets endpoint as fallback
+      if (res.status === 403) {
+        console.log("Access to pending sheets forbidden, fetching all sheets instead");
+        res = await fetch(`${config.BASE_URL}sheets/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        if (res.ok) {
+          const allSheets = await res.json();
+          // Filter for pending sheets (assuming there's a status field)
+          const pendingSheets = allSheets.filter(sheet => 
+            sheet.status === "PENDING" || sheet.status === "SUBMITTED"
+          );
+          setPendingTimesheets(pendingSheets);
+          return;
+        }
+      }
+      
       if (res.ok) {
         const data = await res.json();
         setPendingTimesheets(data);
       } else {
         console.error("Failed to fetch pending timesheets");
         setPendingTimesheets([]);
+        setError("Unable to fetch pending timesheets. You may not have permission.");
+        setShowSnackbar(true);
       }
     } catch (error) {
       console.error("Error fetching pending timesheets:", error);
+      setPendingTimesheets([]);
+      setError("Error loading pending timesheets");
+      setShowSnackbar(true);
     }
   };
 
@@ -107,7 +138,8 @@ export default function AdminDashboard() {
     setOpenChangePasswordModal(true);
     handleCloseMenu();
   };
-  const handleCloseChangePasswordModal = () => setOpenChangePasswordModal(false);
+  const handleCloseChangePasswordModal = () =>
+    setOpenChangePasswordModal(false);
   const handleLogoutClick = () => {
     setOpenLogoutConfirm(true);
     handleCloseMenu();
@@ -129,13 +161,17 @@ export default function AdminDashboard() {
 
   const handleNotificationClick = async () => {
     await fetchPendingTimesheets();
-    setDialogOpen(true);
+    if (pendingTimesheets.length > 0 || !error) {
+      setDialogOpen(true);
+    } else {
+      setShowSnackbar(true);
+    }
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
     fetchPendingTimesheets();
-    window.dispatchEvent(new Event('timesheetsUpdated'));
+    window.dispatchEvent(new Event("timesheetsUpdated"));
   };
 
   const iconStyles = {
@@ -144,7 +180,14 @@ export default function AdminDashboard() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#ECEFF1" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: "#ECEFF1",
+      }}
+    >
       <AppBar
         position="static"
         sx={{
@@ -154,17 +197,21 @@ export default function AdminDashboard() {
         }}
       >
         <Toolbar>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="edit profile"
-              sx={{ mr: 1 }}
-              onClick={openUserDialog}
-            >
-              <EditIcon />
-            </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="edit profile"
+            sx={{ mr: 1 }}
+            onClick={openUserDialog}
+          >
+            <EditIcon />
+          </IconButton>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: "bold" }}
+          >
             Admin Dashboard
           </Typography>
           <IconButton size="large" onClick={handleMenu} color="inherit">
@@ -182,7 +229,9 @@ export default function AdminDashboard() {
             }}
           >
             <MenuItem onClick={handleOpenProfile}>Profile</MenuItem>
-            <MenuItem onClick={handleOpenChangePasswordModal}>Change Password</MenuItem>
+            <MenuItem onClick={handleOpenChangePasswordModal}>
+              Change Password
+            </MenuItem>
             <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
           </Menu>
         </Toolbar>
@@ -202,15 +251,15 @@ export default function AdminDashboard() {
             <DashboardCard
               icon={<GroupsIcon sx={iconStyles} />}
               title="Managers"
-              subtitle="View Manager's Timesheets"
-              onClick={() => navigate("/team-members")}
+              subtitle="View all managers"
+              onClick={() => navigate("/managers")}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={5} lg={4}>
             <DashboardCard
               icon={<GroupIcon sx={iconStyles} />}
               title="Employees"
-              subtitle="Access and review timesheets"
+              subtitle="View all employees"
               onClick={() => navigate("/employee-list")}
             />
           </Grid>
@@ -218,7 +267,7 @@ export default function AdminDashboard() {
             <DashboardCard
               icon={<FactCheckIcon sx={iconStyles} />}
               title="Pending Requests"
-              subtitle={`${pendingTimesheets.length} pending requests`}
+              subtitle={error ? "Not available" : `${pendingTimesheets.length} pending requests`}
               onClick={handleNotificationClick}
             />
           </Grid>
@@ -239,7 +288,11 @@ export default function AdminDashboard() {
         <DialogContent>Are you sure you want to logout?</DialogContent>
         <DialogActions>
           <Button onClick={handleLogoutCancel}>Cancel</Button>
-          <Button onClick={handleLogoutConfirm} variant="contained" color="error">
+          <Button
+            onClick={handleLogoutConfirm}
+            variant="contained"
+            color="error"
+          >
             Confirm
           </Button>
         </DialogActions>
@@ -251,6 +304,22 @@ export default function AdminDashboard() {
         timesheets={pendingTimesheets}
         title="Pending Approval Requests"
       />
+      
+      {/* Error Snackbar */}
+      <Snackbar 
+        open={showSnackbar} 
+        autoHideDuration={6000} 
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setShowSnackbar(false)} 
+          severity="warning" 
+          sx={{ width: '100%' }}
+        >
+          {error || "No pending timesheets available"}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
