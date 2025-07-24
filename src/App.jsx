@@ -12,6 +12,7 @@ import ADashboard from "./components/Admin/ADashboard";
 
 import ProtectedRoute from "../src/components/utils/ProtectedRoute";
 import { Navigate, Route, Routes } from "react-router-dom";
+import SDashboard from './components/super_admin/sdashboard';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
         <Route path="/signup" element={<RegisterForm />} />
 
         {/* Protected Routes */}
-        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "ADMIN", "EMPLOYEE"]} />}>
           <Route path="/mdashboard" element={<MDashboard />} />
           <Route path="/create" element={<CreateTimesheet />} />
           <Route path="/draft-timesheets" element={<DraftTimesheetTable />} />
@@ -51,6 +52,10 @@ function App() {
             path="/employee-list"
             element={<TeamMemberTable mode="ADMIN" filterRole="EMPLOYEE" />}
           />
+        </Route>
+        <Route element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]} />}>
+          <Route path="/sdashboard/*" element={<SDashboard />} />
+          
         </Route>
       </Routes>
     </>

@@ -123,14 +123,12 @@ export default function CreateTimesheet({ onCancel }) {
         width: "100%",
         maxWidth: "800px",
         p: { xs: 3, sm: 4 },
-        backgroundColor: "#212121",
-        color: "#E0E0E0",
         overflowX: "hidden",
         mx: "auto", // Horizontal center
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <IconButton onClick={onCancel} color="inherit">
+        <IconButton onClick={onCancel}>
           <ArrowBackIcon />
         </IconButton>
         <Box sx={{ flexGrow: 1, textAlign: "center" }}>
@@ -147,8 +145,6 @@ export default function CreateTimesheet({ onCancel }) {
           multiline
           minRows={3}
           fullWidth
-          InputLabelProps={{ style: { color: "#E0E0E0" } }}
-          InputProps={{ style: { color: "#E0E0E0" } }}
           error={!!errors.taskName}
           helperText={
             errors.taskName
@@ -158,9 +154,6 @@ export default function CreateTimesheet({ onCancel }) {
                     .length
                 } / 150 words`
           }
-          FormHelperTextProps={{
-            sx: { color: "#E0E0E0" },
-          }}
         />
 
         <TextField
@@ -171,41 +164,39 @@ export default function CreateTimesheet({ onCancel }) {
           fullWidth
           error={!!errors.project}
           helperText={errors.project}
-          InputLabelProps={{ style: { color: "#E0E0E0" } }}
-          InputProps={{ style: { color: "#E0E0E0" } }}
         />
 
-        <TextField
-          label="Start Date"
-          name="startDate"
-          type="date"
-          value={timesheet.startDate}
-          onChange={handleChange}
-          fullWidth
-          InputLabelProps={{ shrink: true, style: { color: "#E0E0E0" } }}
-          InputProps={{
-            style: { color: "#E0E0E0", WebkitTextFillColor: "#E0E0E0" }, // Ensure text remains white on Chrome
-            inputProps: { min: today },
-          }}
-          error={!!errors.startDate}
-          helperText={errors.startDate}
-        />
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <TextField
+            label="Start Date"
+            name="startDate"
+            type="date"
+            value={timesheet.startDate}
+            onChange={handleChange}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              inputProps: { min: today },
+            }}
+            error={!!errors.startDate}
+            helperText={errors.startDate}
+          />
 
-        <TextField
-          label="End Date"
-          name="endDate"
-          type="date"
-          value={timesheet.endDate}
-          onChange={handleChange}
-          fullWidth
-          InputLabelProps={{ shrink: true, style: { color: "#E0E0E0" } }}
-          InputProps={{
-            style: { color: "#E0E0E0" },
-            inputProps: { min: today },
-          }}
-          error={!!errors.endDate}
-          helperText={errors.endDate}
-        />
+          <TextField
+            label="End Date"
+            name="endDate"
+            type="date"
+            value={timesheet.endDate}
+            onChange={handleChange}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              inputProps: { min: today },
+            }}
+            error={!!errors.endDate}
+            helperText={errors.endDate}
+          />
+        </Box>
 
         <TextField
           label="Effort (Hours)"
@@ -216,9 +207,7 @@ export default function CreateTimesheet({ onCancel }) {
           fullWidth
           error={!!errors.effort}
           helperText={errors.effort}
-          InputLabelProps={{ style: { color: "#E0E0E0" } }}
           InputProps={{
-            style: { color: "#E0E0E0" },
             inputProps: { step: "0.1", min: 0 },
           }}
         />
@@ -233,7 +222,6 @@ export default function CreateTimesheet({ onCancel }) {
         >
           <Button
             variant="outlined"
-            color="inherit"
             fullWidth={false}
             onClick={saveDraft}
           >

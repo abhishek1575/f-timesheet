@@ -42,6 +42,9 @@ function Login() {
           case "ADMIN":
             navigate("/adashboard");
             break;
+            case "SUPER_ADMIN":
+            navigate("/sdashboard");
+            break;
           default:
             throw new Error("Unknown role");
         }

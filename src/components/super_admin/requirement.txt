@@ -1,0 +1,166 @@
+✅ 1. Create a Project
+POST /projects/create
+Role required: SUPER_ADMIN
+
+curl -X POST http://localhost:8080/projects/create \
+-H "Authorization: Bearer your_jwt_token_here" \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "New Project",
+  "managerId": 2,
+  "teamMemberIds": [3, 4]
+}'
+✅ 2. Assign Manager to Project
+PUT /projects/{projectId}/assign-manager/{managerId}
+Role required: SUPER_ADMIN
+
+
+curl -X PUT http://localhost:8080/projects/1/assign-manager/2 \
+-H "Authorization: Bearer your_jwt_token_here"
+✅ 3. Add Member to Project
+PUT /projects/{projectId}/add-member/{userId}
+Roles allowed: SUPER_ADMIN, MANAGER
+
+
+curl -X PUT http://localhost:8080/projects/1/add-member/5 \
+-H "Authorization: Bearer your_jwt_token_here"
+✅ 4. Get Projects by Manager
+GET /projects/by-manager/{managerId}
+Roles allowed: SUPER_ADMIN, MANAGER
+ it gives response:
+ [
+    {
+        "id": 1,
+        "name": "PEPS",
+        "managerId": 2,
+        "managerName": "Manager",
+        "teamMemberIds": [
+            3
+        ],
+        "teamMemberNames": [
+            "Employee"
+        ]
+    },
+    {
+        "id": 4,
+        "name": "ADAS",
+        "managerId": 2,
+        "managerName": "Manager",
+        "teamMemberIds": [],
+        "teamMemberNames": []
+    }
+]
+
+curl -X GET http://localhost:8080/projects/by-manager/2 \
+-H "Authorization: Bearer your_jwt_token_here"
+✅ 5. Get Projects by User
+GET /projects/by-user/{userId}
+Public (no role check)
+it gives response:
+[
+    {
+        "id": 1,
+        "name": "PEPS",
+        "managerId": 2,
+        "managerName": "Manager",
+        "teamMemberIds": [
+            3
+        ],
+        "teamMemberNames": [
+            "Employee"
+        ]
+    }
+]
+
+curl -X GET http://localhost:8080/projects/by-user/3 \
+-H "Authorization: Bearer your_jwt_token_here"
+✅ 6. Get All Projects
+GET /projects/all
+Role required: SUPER_ADMIN
+response:
+    {
+        "id": 1,
+        "name": "PEPS",
+        "managerId": 2,
+        "managerName": "Manager",
+        "teamMemberIds": [
+            3
+        ],
+        "teamMemberNames": [
+            "Employee"
+        ]
+    },
+    {
+        "id": 4,
+        "name": "ADAS",
+        "managerId": 2,
+        "managerName": "Manager",
+        "teamMemberIds": [],
+        "teamMemberNames": []
+    },
+    {
+        "id": 5,
+        "name": "TEST",
+        "managerId": null,
+        "managerName": null,
+        "teamMemberIds": [],
+        "teamMemberNames": []
+    }
+]
+
+curl -X GET http://localhost:8080/projects/all \
+-H "Authorization: Bearer your_jwt_token_here"
+✅ 7. Get Project Audit Logs
+GET /projects/audit-logs
+Role required: SUPER_ADMIN
+
+
+curl -X GET http://localhost:8080/projects/audit-logs \
+-H "Authorization: Bearer your_jwt_token_here"
+
+response:[
+    {
+        "id": 1,
+        "projectId": 5,
+        "projectName": "TEST",
+        "actorId": 1,
+        "actorName": "Super Admin",
+        "targetUserId": 1,
+        "targetUserName": "Super Admin",
+        "action": "CREATED",
+        "timestamp": "2025-07-23T18:51:12.856018"
+    },
+    {
+        "id": 2,
+        "projectId": 4,
+        "projectName": "ADAS",
+        "actorId": 1,
+        "actorName": "Super Admin",
+        "targetUserId": 4,
+        "targetUserName": "Manager2",
+        "action": "ASSIGNED_MANAGER",
+        "timestamp": "2025-07-23T19:00:21.6082"
+    },
+    {
+        "id": 3,
+        "projectId": 4,
+        "projectName": "ADAS",
+        "actorId": 1,
+        "actorName": "Super Admin",
+        "targetUserId": 4,
+        "targetUserName": "Manager2",
+        "action": "REMOVED_MANAGER",
+        "timestamp": "2025-07-23T19:06:29.443472"
+    },
+    {
+        "id": 4,
+        "projectId": 4,
+        "projectName": "ADAS",
+        "actorId": 1,
+        "actorName": "Super Admin",
+        "targetUserId": 2,
+        "targetUserName": "Manager",
+        "action": "ASSIGNED_MANAGER",
+        "timestamp": "2025-07-23T19:06:29.462985"
+    }
+]

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "react-scripts start --host 0.0.0.0",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -16,6 +17,7 @@
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@mui/styled-engine": "^7.1.1",
+    "@tailwindcss/vite": "^4.1.11",
     "axios": "^1.10.0",
     "file-saver": "^2.0.5",
     "material-react-table": "^3.2.1",
@@ -24,6 +26,7 @@
     "react-router-dom": "^7.6.2",
     "react-table": "^7.8.0",
     "react-toastify": "^11.0.5",
+    "tailwindcss": "^4.1.11",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
