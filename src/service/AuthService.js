@@ -45,13 +45,13 @@ class AuthService {
       name: sessionStorage.getItem("Name"),
       email: sessionStorage.getItem("Email"),
       role: sessionStorage.getItem("Role"),
-      token: sessionStorage.getItem("Token"),
+      token: sessionStorage.getItem("token"),
       type: sessionStorage.getItem("Type"),
     };
   }
 
   authHeader() {
-    const token = sessionStorage.getItem("Token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       return { Authorization: `Bearer ${token}` };
     } else {

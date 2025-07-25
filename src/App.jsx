@@ -55,7 +55,6 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["SUPER_ADMIN"]} />}>
           <Route path="/sdashboard/*" element={<SDashboard />} />
-          
         </Route>
       </Routes>
     </>

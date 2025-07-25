@@ -24,9 +24,6 @@ const UserProfileDialog = ({ openProfileDialog, handleCloseProfileDialog }) => {
   const userId = sessionStorage.getItem("UserId");
   const token = sessionStorage.getItem("token");
 
-  console.log("UserId from UserProfileDialog:", sessionStorage.getItem("UserId"));
-  console.log("Token from UserProfileDialog:", sessionStorage.getItem("token"));
-
 
   useEffect(() => {
     const loadUserData = async () => {

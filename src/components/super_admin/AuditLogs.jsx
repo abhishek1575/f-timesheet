@@ -1,87 +1,154 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import config from "../../service/config";
+import {
+  CircularProgress,
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  InputAdornment,
+  Box,
+  Typography,
+  Chip,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 const AuditLogs = () => {
   const [auditLogs, setAuditLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [error, setError] = useState(null);
+
+  const token = sessionStorage.getItem("token");
 
   useEffect(() => {
-    // Fetch audit logs logic here
-    const fetchedLogs = [
-      {
-        "id": 1,
-        "projectId": 5,
-        "projectName": "TEST",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 1,
-        "targetUserName": "Super Admin",
-        "action": "CREATED",
-        "timestamp": "2025-07-23T18:51:12.856018"
-      },
-      {
-        "id": 2,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 4,
-        "targetUserName": "Manager2",
-        "action": "ASSIGNED_MANAGER",
-        "timestamp": "2025-07-23T19:00:21.6082"
-      },
-      {
-        "id": 3,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 4,
-        "targetUserName": "Manager2",
-        "action": "REMOVED_MANAGER",
-        "timestamp": "2025-07-23T19:06:29.443472"
-      },
-      {
-        "id": 4,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 2,
-        "targetUserName": "Manager",
-        "action": "ASSIGNED_MANAGER",
-        "timestamp": "2025-07-23T19:06:29.462985"
+    const fetchAuditLogs = async () => {
+      try {
+        const response = await axios.get(
+          `${config.BASE_URL}projects/audit-logs`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setAuditLogs(response.data);
+        setFilteredLogs(response.data);
+      } catch (err) {
+        setError("Failed to fetch audit logs. Please try again later.");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    ];
-    setAuditLogs(fetchedLogs);
-  }, []);
+    };
+
+    fetchAuditLogs();
+  }, [token]);
+
+  const handleSearch = (event) => {
+    const text = event.target.value.toLowerCase();
+    setSearchText(text);
+    const filtered = auditLogs.filter(
+      (log) =>
+        log.projectName.toLowerCase().includes(text) ||
+        log.actorName.toLowerCase().includes(text) ||
+        log.targetUserName.toLowerCase().includes(text) ||
+        log.action.toLowerCase().includes(text)
+    );
+    setFilteredLogs(filtered);
+  };
+
+  const getActionChipColor = (action) => {
+    switch (action) {
+      case "CREATED":
+        return "success";
+      case "ASSIGNED_MANAGER":
+        return "primary";
+      case "REMOVED_MANAGER":
+        return "error";
+      default:
+        return "default";
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h2 className="text-2xl font-bold mb-5">Audit Logs</h2>
-      <div className="bg-white shadow-md rounded my-6">
-        <table className="min-w-max w-full table-auto">
-          <thead>
-            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-              <th className="py-3 px-6 text-left">Project</th>
-              <th className="py-3 px-6 text-left">Actor</th>
-              <th className="py-3 px-6 text-left">Target User</th>
-              <th className="py-3 px-6 text-center">Action</th>
-              <th className="py-3 px-6 text-center">Timestamp</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-600 text-sm font-light">
-            {auditLogs.map(log => (
-              <tr key={log.id} className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left whitespace-nowrap">{log.projectName}</td>
-                <td className="py-3 px-6 text-left">{log.actorName}</td>
-                <td className="py-3 px-6 text-left">{log.targetUserName}</td>
-                <td className="py-3 px-6 text-center">{log.action}</td>
-                <td className="py-3 px-6 text-center">{new Date(log.timestamp).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Box sx={{ p: 3, backgroundColor: "#f7fafc", borderRadius: "8px" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: "#2d3748" }}>
+        Audit Log
+      </Typography>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Search by project, user, or action..."
+        value={searchText}
+        onChange={handleSearch}
+        sx={{ mb: 3 }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", my: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ my: 2 }}>
+          {error}
+        </Alert>
+      ) : filteredLogs.length === 0 ? (
+        <Alert severity="info" sx={{ my: 2 }}>
+          No matching audit logs found.
+        </Alert>
+      ) : (
+        <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: "8px" }}>
+          <Table sx={{ minWidth: 650 }} aria-label="audit logs table">
+            <TableHead sx={{ backgroundColor: "#edf2f7" }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Project</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Actor</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Target User</TableCell>
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Action</TableCell>
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Timestamp</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredLogs.map((log) => (
+                <TableRow
+                  key={log.id}
+                  sx={{ "&:hover": { backgroundColor: "#f1f5f9" } }}
+                >
+                  <TableCell>{log.projectName}</TableCell>
+                  <TableCell>{log.actorName}</TableCell>
+                  <TableCell>{log.targetUserName}</TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={log.action.replace(/_/g, " ")}
+                      color={getActionChipColor(log.action)}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
   );
 };
 
