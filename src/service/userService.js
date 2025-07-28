@@ -1,5 +1,7 @@
 // src/services/userService.js
 import config from "./config";
+import axios from "axios";
+
 
 export const fetchUserById = async (userId, token) => {
   console.log("Fetching user details for ID:", userId);
@@ -58,3 +60,24 @@ export const updateUser = async (userId, formData, token) => {
 
   return response;
 };
+
+
+export async function registerEmployee(data, token) {
+  try {
+    const response = await axios.post(`${config.BASE_URL}auth/register`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Register error:", error);
+
+    if (error.response) {
+      throw new Error(error.response.data.message || "Registration failed");
+    } else {
+      throw new Error("Network error or server not reachable");
+    }
+  }
+}

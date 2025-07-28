@@ -77,7 +77,7 @@ const RegisterForm = () => {
     };
 
     try {
-      await axios.post(`${config.BASE_URL}auth/register`, payload, {
+      await axios.post(`${config.BASE_URL}auth/public/register`, payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -220,7 +220,8 @@ const RegisterForm = () => {
               >
                 <MenuItem value="ADMIN">ADMIN</MenuItem>
                 <MenuItem value="MANAGER">MANAGER</MenuItem>
-                <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem>
+                {/* <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem> */}
+                <MenuItem value="SUPER_ADMIN">SUPER ADMIN</MenuItem>
               </Select>
             </FormControl>
             <Button

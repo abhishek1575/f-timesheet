@@ -42,7 +42,7 @@ function Login() {
           case "ADMIN":
             navigate("/adashboard");
             break;
-            case "SUPER_ADMIN":
+          case "SUPER_ADMIN":
             navigate("/sdashboard");
             break;
           default:
@@ -77,7 +77,11 @@ function Login() {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
           {error}
         </Alert>
       </Snackbar>
@@ -98,7 +102,11 @@ function Login() {
             alt="Ceinsys Logo"
             style={{ width: "200px", height: "35px", marginBottom: "20px" }}
           />
-          <Typography component="h1" variant="h5" sx={{ color: "#084298", mb: 2 }}>
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ color: "#084298", mb: 2 }}
+          >
             Welcome to Ceinsys
           </Typography>
           <Typography component="h2" variant="h6" sx={{ mb: 3 }}>
@@ -133,7 +141,12 @@ function Login() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, background: "#333", '&:hover': { background: '#555' } }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                background: "#333",
+                "&:hover": { background: "#555" },
+              }}
             >
               Get Started
             </Button>

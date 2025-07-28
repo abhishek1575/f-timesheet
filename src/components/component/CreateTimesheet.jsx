@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   TextField,
@@ -62,7 +63,6 @@ export default function CreateTimesheet({ onCancel }) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
 
   const saveDraft = async () => {
     try {
@@ -85,9 +85,8 @@ export default function CreateTimesheet({ onCancel }) {
     }
   };
 
-
   const handleSubmit = async () => {
-    
+
     if (!validate()) return;
 
     try {
@@ -112,8 +111,6 @@ export default function CreateTimesheet({ onCancel }) {
     }
   };
 
-  
-  
   const today = new Date().toISOString().split("T")[0];
 
   return (

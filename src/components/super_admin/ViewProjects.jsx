@@ -89,7 +89,7 @@ const ViewProjects = () => {
   }
 
   const filteredPrivilegedUsers = privilegedUsers.filter(user => 
-    ["MANAGER", "ADMIN", "SUPER_ADMIN"].includes(user.role)
+    user.role && ["MANAGER", "ADMIN", "SUPER_ADMIN"].includes(user.role.toUpperCase())
   );
 
   return (
