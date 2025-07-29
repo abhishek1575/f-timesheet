@@ -32,22 +32,53 @@ export const getAllTimesheets = async () => {
 };
 
 // src/services/timesheetService.js
-
 export const createTimesheet = async (timesheetData) => {
   const token = sessionStorage.getItem("token");
+
+  const payload = {
+    ...timesheetData,
+    project: {
+      id: parseInt(timesheetData.projectId),
+    },
+  };
+
+  delete payload.projectId; // remove projectId from top level if not needed
+
   try {
-    const response = await axios.post(`${config.BASE_URL}sheets/create`, timesheetData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.post(
+      `${config.BASE_URL}sheets/create`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("API Error:", error.response?.data || error.message);
     throw error;
   }
 };
+
+
+
+// export const createTimesheet = async (timesheetData) => {
+//   const token = sessionStorage.getItem("token");
+//   try {
+//     const response = await axios.post(`${config.BASE_URL}sheets/create`, timesheetData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("API Error:", error);
+//     throw error;
+//   }
+// };
 
 
 export const submitTimesheet = async (timesheetId) => {
@@ -205,4 +236,19 @@ export const fetchAllEmployeeTimesheets = async (token) => {
     }
   );
   return await response.json();
+};
+
+export const fetchAdminPendingTimesheets = async () => {
+  const token = localStorage.getItem("token");
+  const res = await fetch(
+    `${config.BASE_URL}sheets/admin/pending-manager-sheets`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch admin pending timesheets");
+  return res.json();
 };

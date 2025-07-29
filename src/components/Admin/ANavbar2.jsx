@@ -27,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../component/ChangePasswordModal";
 import EditUserProfile from "../component/EditUserProfile";
 import config from "../../service/config";
-import PendingTimesheetDialog from "../manager/PendingTimesheetDialog";
+import PendingTimesheetDialog from "../Admin/PendingDialogTimesheetForAdmin";
 import UserProfileDialog from "../component/UserProfileDialog";
 
 const DashboardCard = ({ icon, title, subtitle, onClick }) => (

@@ -81,3 +81,20 @@ export async function registerEmployee(data, token) {
     }
   }
 }
+
+ // if needed
+
+export const getProjectsByUser = async (userId) => {
+  const token = sessionStorage.getItem("token");
+  const res = await fetch(`${config.BASE_URL}projects/by-user/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch projects");
+  }
+
+  return await res.json();
+};
