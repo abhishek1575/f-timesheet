@@ -1,169 +1,231 @@
 import React, { useEffect, useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-
-import Button from "@mui/material/Button";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
-
 import {
-  approveTimesheetById,
-  rejectTimesheetById,
-} from "../../service/timesheetService";
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextareaAutosize,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  CircularProgress,
+  Box,
+  IconButton,
+  Collapse,
+} from "@mui/material";
+import {
+  CheckCircleOutline as ApproveIcon,
+  HighlightOff as RejectIcon,
+  Comment as CommentIcon,
+  Person as PersonIcon,
+  Event as EventIcon,
+  AccessTime as AccessTimeIcon,
+  Work as WorkIcon,
+  Business as BusinessIcon,
+} from "@mui/icons-material";
+import { approveTimesheetById, rejectTimesheetById } from "../../service/timesheetService";
 import config from "../../service/config";
 
-const PendingTimesheetsDialog = ({ open, onClose }) => {
+const StatItem = ({ icon, label, value }) => (
+  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+    {icon}
+    <Typography variant="body2" sx={{ ml: 1.5, fontWeight: "medium" }}>
+      {label}:
+    </Typography>
+    <Typography variant="body2" sx={{ ml: 0.5, color: "text.secondary" }}>
+      {value}
+    </Typography>
+  </Box>
+);
+
+const PendingTimesheetsDialog = ({ open, onClose, onUpdate, title }) => {
   const [timesheets, setTimesheets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
 
   const fetchPendingTimesheets = async () => {
-    const token = sessionStorage.getItem("token");
-    const res = await fetch(
-      `${config.BASE_URL}sheets/admin/pending-manager-sheets`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await res.json();
-    setTimesheets(data);
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(
+        `${config.BASE_URL}sheets/admin/pending-manager-sheets`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await res.json();
+      setTimesheets(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch timesheets:", error);
+      setTimesheets([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (open) {
+      fetchPendingTimesheets();
+    }
+  }, [open]);
 
   const handleApprove = async (id) => {
     await approveTimesheetById(id);
     fetchPendingTimesheets();
+    if (onUpdate) onUpdate();
   };
 
   const handleReject = async (id) => {
-    if (!rejectComment.trim()) return alert("Comment is required to reject.");
+    if (!rejectComment.trim()) {
+      alert("Comment is required to reject.");
+      return;
+    }
     await rejectTimesheetById(id, rejectComment);
     setRejectingId(null);
     setRejectComment("");
     fetchPendingTimesheets();
+    if (onUpdate) onUpdate();
   };
 
-  useEffect(() => {
-    if (open) fetchPendingTimesheets();
-  }, [open]);
-
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Pending Timesheets</DialogTitle>
-      <DialogContent dividers>
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {timesheets.length === 0 ? (
-            <p style={{ textAlign: "center", color: "gray" }}>
-              No pending timesheets.
-            </p>
-          ) : (
-            timesheets.map((sheet) => (
-              <div
-                key={sheet.id}
-                style={{
-                  border: "1px solid #ccc",
-                  padding: 16,
-                  borderRadius: 12,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 8,
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{ background: "#263238", color: "white" }}>
+        {title}
+      </DialogTitle>
+      <DialogContent dividers sx={{ background: "#f5f5f5", p: { xs: 1, sm: 2, md: 3 } }}>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : timesheets.length === 0 ? (
+          <Typography sx={{ textAlign: "center", color: "gray", p: 4 }}>
+            No pending timesheets found.
+          </Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {timesheets.map((sheet) => (
+              <Grid item xs={12} key={sheet.id}>
+                <Card
+                  elevation={3}
+                  sx={{
+                    borderRadius: "12px",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.02)",
+                      boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+                    },
                   }}
                 >
-                  <div>
-                    <strong>Task:</strong>
-                    <p>{sheet.taskName}</p>
-                  </div>
-                  <div>
-                    <strong>Project:</strong>
-                    <p>{sheet.projectName}</p>
-                  </div>
-                  <div>
-                    <strong>User:</strong>
-                    <p>{sheet.userName}</p>
-                  </div>
-                  <div>
-                    <strong>Effort:</strong>
-                    <p>{sheet.effort} hours</p>
-                  </div>
-                  <div>
-                    <strong>Date Range:</strong>
-                    <p>
-                      {sheet.startDate} to {sheet.endDate}
-                    </p>
-                  </div>
-                  <div>
-                    <strong>Submitted At:</strong>
-                    <p>{new Date(sheet.submittedDate).toLocaleString()}</p>
-                  </div>
-                </div>
-                <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleApprove(sheet.id)}
-                  >
-                    Approve
-                  </Button>
-                  {rejectingId === sheet.id ? (
-                    <div
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                      }}
-                    >
-                      <TextareaAutosize
-                        minRows={3}
-                        placeholder="Enter rejection comment"
-                        value={rejectComment}
-                        onChange={(e) => setRejectComment(e.target.value)}
-                        style={{ width: "100%", padding: 8, borderRadius: 4 }}
-                      />
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleReject(sheet.id)}
-                        >
-                          Confirm Reject
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          onClick={() => {
-                            setRejectingId(null);
-                            setRejectComment("");
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <StatItem
+                          icon={<PersonIcon color="primary" />}
+                          label="User"
+                          value={sheet.userName}
+                        />
+                        <StatItem
+                          icon={<BusinessIcon color="action" />}
+                          label="Project"
+                          value={sheet.projectName}
+                        />
+                        <StatItem
+                          icon={<WorkIcon color="action" />}
+                          label="Task"
+                          value={sheet.taskName}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <StatItem
+                          icon={<EventIcon color="action" />}
+                          label="Date Range"
+                          value={`${sheet.startDate} to ${sheet.endDate}`}
+                        />
+                        <StatItem
+                          icon={<AccessTimeIcon color="action" />}
+                          label="Effort"
+                          value={`${sheet.effort} hours`}
+                        />
+                         <StatItem
+                          icon={<EventIcon color="action" />}
+                          label="Submitted At"
+                          value={new Date(sheet.submittedDate).toLocaleString()}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<ApproveIcon />}
+                        onClick={() => handleApprove(sheet.id)}
+                        sx={{ mr: 1 }}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<RejectIcon />}
+                        onClick={() => setRejectingId(rejectingId === sheet.id ? null : sheet.id)}
+                      >
+                        Reject
+                      </Button>
+                    </Box>
+                    <Collapse in={rejectingId === sheet.id}>
+                      <Box sx={{ mt: 2, p: 2, background: "#fafafa", borderRadius: "8px" }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                          <CommentIcon sx={{ verticalAlign: "middle", mr: 0.5 }} />
+                          Rejection Comment
+                        </Typography>
+                        <TextareaAutosize
+                          minRows={3}
+                          placeholder="Enter rejection comment..."
+                          value={rejectComment}
+                          onChange={(e) => setRejectComment(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            borderRadius: "4px",
+                            borderColor: "#ccc",
                           }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => setRejectingId(sheet.id)}
-                    >
-                      Reject
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                        />
+                        <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end" }}>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              setRejectingId(null);
+                              setRejectComment("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleReject(sheet.id)}
+                            sx={{ ml: 1 }}
+                          >
+                            Confirm Reject
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Collapse>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ background: "#f5f5f5" }}>
         <Button variant="outlined" onClick={onClose}>
           Close
         </Button>

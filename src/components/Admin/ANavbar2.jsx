@@ -29,6 +29,7 @@ import EditUserProfile from "../component/EditUserProfile";
 import config from "../../service/config";
 import PendingTimesheetDialog from "../Admin/PendingDialogTimesheetForAdmin";
 import UserProfileDialog from "../component/UserProfileDialog";
+import NotificationBadge from "../component/NotificationBadge";
 
 const DashboardCard = ({ icon, title, subtitle, onClick }) => (
   <Card
@@ -87,30 +88,16 @@ export default function AdminDashboard() {
     try {
       setError(null);
       const token = sessionStorage.getItem("token");
-      
-      // First try the regular pending endpoint
-      let res = await fetch(`${config.BASE_URL}sheets/pending`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      // If forbidden (403), try the all sheets endpoint as fallback
-      if (res.status === 403) {
-        console.log("Access to pending sheets forbidden, fetching all sheets instead");
-        res = await fetch(`${config.BASE_URL}sheets/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        if (res.ok) {
-          const allSheets = await res.json();
-          // Filter for pending sheets (assuming there's a status field)
-          const pendingSheets = allSheets.filter(sheet => 
-            sheet.status === "PENDING" || sheet.status === "SUBMITTED"
-          );
-          setPendingTimesheets(pendingSheets);
-          return;
+      const res = await fetch(
+        `${config.BASE_URL}sheets/admin/pending-manager-sheets`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      }
-      
+      );
+
       if (res.ok) {
         const data = await res.json();
         setPendingTimesheets(data);
@@ -171,7 +158,6 @@ export default function AdminDashboard() {
   const handleDialogClose = () => {
     setDialogOpen(false);
     fetchPendingTimesheets();
-    window.dispatchEvent(new Event("timesheetsUpdated"));
   };
 
   const iconStyles = {
@@ -214,6 +200,7 @@ export default function AdminDashboard() {
           >
             Admin Dashboard
           </Typography>
+          <NotificationBadge count={pendingTimesheets.length} />
           <IconButton size="large" onClick={handleMenu} color="inherit">
             <AccountCircle />
           </IconButton>
@@ -301,8 +288,8 @@ export default function AdminDashboard() {
       <PendingTimesheetDialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        timesheets={pendingTimesheets}
-        title="Pending Approval Requests"
+        onUpdate={fetchPendingTimesheets} 
+        title={`Pending Approval Requests (${pendingTimesheets.length})`}
       />
       
       {/* Error Snackbar */}

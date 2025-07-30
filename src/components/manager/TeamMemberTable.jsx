@@ -252,6 +252,7 @@ const TeamMemberTable = ({ mode: providedMode, filterRole }) => {
     const role = sessionStorage.getItem("Role");
     if (role === "MANAGER") navigate("/mdashboard");
     else if (role === "ADMIN") navigate("/adashboard");
+    else if (role === "SUPER_ADMIN") navigate("/sdashboard");
     else alert("Unauthorized role");
   };
 

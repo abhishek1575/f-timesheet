@@ -24,7 +24,7 @@ function App() {
         <Route path="/signup" element={<RegisterForm />} />
 
         {/* Protected Routes */}
-        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "ADMIN", "EMPLOYEE"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "ADMIN", "EMPLOYEE","SUPER_ADMIN"]} />}>
           <Route path="/mdashboard" element={<MDashboard />} />
           <Route path="/create" element={<CreateTimesheet />} />
           <Route path="/draft-timesheets" element={<DraftTimesheetTable />} />
