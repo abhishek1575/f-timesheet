@@ -8,7 +8,6 @@ import {
   TextField,
   Stack,
   Paper,
-  Typography,
 } from "@mui/material";
 
 export default function UpdateTimesheetForm({
@@ -58,15 +57,15 @@ export default function UpdateTimesheetForm({
             <TextField
               label="Task Name"
               name="taskName"
-              value={timesheet.taskName}
+              value={timesheet.taskName || ""}
               onChange={onChange}
               fullWidth
               variant="outlined"
             />
             <TextField
-              label="Project"
-              name="project"
-              value={timesheet.project}
+              label="Project Name"
+              name="projectName" // Changed from "project" to match API
+              value={timesheet.projectName || ""} // Ensure fallback to empty string
               onChange={onChange}
               fullWidth
               variant="outlined"
@@ -75,7 +74,7 @@ export default function UpdateTimesheetForm({
               label="Start Date"
               name="startDate"
               type="date"
-              value={timesheet.startDate}
+              value={timesheet.startDate || ""}
               onChange={onChange}
               InputLabelProps={{ shrink: true }}
               fullWidth
@@ -85,7 +84,7 @@ export default function UpdateTimesheetForm({
               label="End Date"
               name="endDate"
               type="date"
-              value={timesheet.endDate}
+              value={timesheet.endDate || ""}
               onChange={onChange}
               InputLabelProps={{ shrink: true }}
               fullWidth
@@ -95,7 +94,7 @@ export default function UpdateTimesheetForm({
               label="Effort (Hours)"
               name="effort"
               type="number"
-              value={timesheet.effort}
+              value={timesheet.effort || ""}
               onChange={onChange}
               fullWidth
               inputProps={{ min: 0, step: "0.1" }}
@@ -151,7 +150,6 @@ export default function UpdateTimesheetForm({
     </Dialog>
   );
 }
-
 // import React from "react";
 // import {
 //   Dialog,

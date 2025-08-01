@@ -1,24 +1,87 @@
 import axios from "axios";
-import config from "./config"; // Ensure this file exports BASE_URL
+import { authHeader } from "../components/helpers/auth-header";
 
-export const createProject = async (projectData) => {
+const API_URL = "http://localhost:8080";
+
+// Create axios instance with base configuration
+const apiClient = axios.create({
+  baseURL: API_URL,
+  timeout: 10000,
+});
+
+// Add request interceptor to include auth header
+apiClient.interceptors.request.use(
+  (config) => {
+    const headers = authHeader();
+    config.headers = {
+      ...config.headers,
+      ...headers,
+    };
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export const superAdminService = {
+  getAllAdmins,
+  getAllUsers,
+  getPrivilegedUsers,
+  assignManager,
+  updateUser,
+  deleteUser,
+  reactivateUser,
+  removeManager,
+  getUserTimesheets,
+};
+
+async function handleRequest(request) {
   try {
-    const token = sessionStorage.getItem("Token");
-
-    const response = await axios.post(
-      `${config.BASE_URL}/projects/create`,
-      projectData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
+    const response = await request;
     return response.data;
   } catch (error) {
-    console.error("Error creating project:", error);
+    console.error("API Error:", error);
     throw error;
   }
-};
+}
+
+function getAllAdmins() {
+  return handleRequest(apiClient.get("/users/admin"));
+}
+
+function getAllUsers() {
+  return handleRequest(apiClient.get("/users/all"));
+}
+
+function getPrivilegedUsers() {
+  return handleRequest(apiClient.get("/users/privileged"));
+}
+
+function assignManager(userId, managerId) {
+  return handleRequest(
+    apiClient.put(
+      `/users/assignManager?userId=${userId}&managerId=${managerId}`
+    )
+  );
+}
+
+function updateUser(id, userData) {
+  return handleRequest(apiClient.put(`/users/update/${id}`, userData));
+}
+
+function deleteUser(id) {
+  return handleRequest(apiClient.delete(`/users/${id}`));
+}
+
+function reactivateUser(id) {
+  return handleRequest(apiClient.put(`/users/${id}/reactivate`));
+}
+
+function removeManager(userId) {
+  return handleRequest(apiClient.put(`/users/${userId}/remove-manager`));
+}
+
+function getUserTimesheets(userId) {
+  return handleRequest(apiClient.get(`/sheets/team/${userId}`));
+}

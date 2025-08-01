@@ -60,15 +60,17 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
       setRemarkError(true);
       return;
     }
+
     try {
       await rejectTimesheetById(selectedSheetId, remark.trim());
       setRemark("");
       setRemarkError(false);
       setRemarkDialogOpen(false);
       refreshData();
-      alert("⛔ Timesheet rejected.");
+      alert("⛔ Timesheet rejected successfully!");
     } catch (error) {
-      alert("Failed to reject timesheet.");
+      console.error("Rejection error:", error);
+      alert(`❌ Failed to reject timesheet: ${error.message}`);
     }
   };
 
@@ -127,7 +129,7 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
                     <TableRow key={sheet.id} hover>
                       <TableCell>{sheet.id}</TableCell>
                       <TableCell>{sheet.userName}</TableCell>
-                      <TableCell>{sheet.project}</TableCell>
+                      <TableCell>{sheet.projectName}</TableCell>
                       <TableCell>{sheet.taskName}</TableCell>
                       <TableCell>{sheet.effort}</TableCell>
                       <TableCell>

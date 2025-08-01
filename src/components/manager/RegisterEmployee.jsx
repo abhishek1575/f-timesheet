@@ -55,8 +55,10 @@ export default function RegisterEmployeeDialog({ open, onClose }) {
 
     try {
       setLoading(true);
+      const managerId = sessionStorage.getItem("UserId"); // current logged-in user is manager
+
       await registerEmployee(
-        { name, email, password, role: "EMPLOYEE" },
+        { name, email, password, role: "EMPLOYEE", managerId }, // ✅ include managerId
         token
       );
       setSuccess(true);
@@ -221,77 +223,3 @@ export default function RegisterEmployeeDialog({ open, onClose }) {
   );
 }
 
-// // src/components/RegisterEmployeeForm.jsx
-// import React, { useState } from "react";
-// import { registerEmployee } from "../../service/userService";
-
-// export default function RegisterEmployeeForm() {
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     email: "",
-//     password: "",
-//     role: "EMPLOYEE",
-//   });
-
-//   const [message, setMessage] = useState(null);
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const token = sessionStorage.getItem("token");
-//     if (!token) return setMessage("Manager token not found. Please login.");
-
-//     try {
-//       const response = await registerEmployee(formData, token);
-//       setMessage("Employee registered successfully!");
-//     } catch (error) {
-//       setMessage(error.message);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-2xl shadow">
-//       <h2 className="text-xl font-bold mb-4">Register New Employee</h2>
-//       {message && <p className="mb-4 text-red-500">{message}</p>}
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <input
-//           type="text"
-//           name="name"
-//           placeholder="Full Name"
-//           value={formData.name}
-//           onChange={handleChange}
-//           className="w-full p-2 border rounded"
-//           required
-//         />
-//         <input
-//           type="email"
-//           name="email"
-//           placeholder="Email"
-//           value={formData.email}
-//           onChange={handleChange}
-//           className="w-full p-2 border rounded"
-//           required
-//         />
-//         <input
-//           type="password"
-//           name="password"
-//           placeholder="Password"
-//           value={formData.password}
-//           onChange={handleChange}
-//           className="w-full p-2 border rounded"
-//           required
-//         />
-//         <button
-//           type="submit"
-//           className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-//         >
-//           Register Employee
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }

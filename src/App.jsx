@@ -12,7 +12,7 @@ import ADashboard from "./components/Admin/ADashboard";
 
 import ProtectedRoute from "../src/components/utils/ProtectedRoute";
 import { Navigate, Route, Routes } from "react-router-dom";
-import SDashboard from './components/super_admin/sdashboard';
+import SDashboard from './components/super_admin/SDashboard';
 
 function App() {
   return (

@@ -53,7 +53,7 @@ const UpdateTimesheetDialog = ({
           <TextField
             label="Task Name"
             name="taskName"
-            value={timesheet.taskName}
+            value={timesheet.taskName || ""}
             onChange={onChange}
             fullWidth
             variant="outlined"
@@ -63,9 +63,9 @@ const UpdateTimesheetDialog = ({
             }}
           />
           <TextField
-            label="Project"
-            name="project"
-            value={timesheet.project}
+            label="Project Name"
+            name="projectName"
+            value={timesheet.projectName || ""} // Simplified fallback
             onChange={onChange}
             fullWidth
             variant="outlined"
@@ -76,7 +76,7 @@ const UpdateTimesheetDialog = ({
             label="Start Date"
             name="startDate"
             type="date"
-            value={timesheet.startDate}
+            value={timesheet.startDate || ""}
             onChange={onChange}
             fullWidth
             InputLabelProps={{ shrink: true, style: { color: "#BDBDBD" } }}
@@ -86,7 +86,7 @@ const UpdateTimesheetDialog = ({
             label="End Date"
             name="endDate"
             type="date"
-            value={timesheet.endDate}
+            value={timesheet.endDate || ""}
             onChange={onChange}
             fullWidth
             InputLabelProps={{ shrink: true, style: { color: "#BDBDBD" } }}
@@ -97,7 +97,7 @@ const UpdateTimesheetDialog = ({
             name="effort"
             type="number"
             inputProps={{ min: 0, max: 24 }}
-            value={timesheet.effort}
+            value={timesheet.effort || ""}
             onChange={onChange}
             fullWidth
             InputLabelProps={{ style: { color: "#BDBDBD" } }}

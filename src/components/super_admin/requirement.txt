@@ -1,166 +1,166 @@
-✅ 1. Create a Project
-POST /projects/create
-Role required: SUPER_ADMIN
+i want make a services for all this curl request in src\service\superAdminService.js given below i have given the description of the curl requst 
 
-curl -X POST http://localhost:8080/projects/create \
--H "Authorization: Bearer your_jwt_token_here" \
--H "Content-Type: application/json" \
--d '{
-  "name": "New Project",
-  "managerId": 2,
-  "teamMemberIds": [3, 4]
-}'
-✅ 2. Assign Manager to Project
-PUT /projects/{projectId}/assign-manager/{managerId}
-Role required: SUPER_ADMIN
+according to that description i have to make dashboard so and emplement all the functionallity that i have given below 
 
+i want super_admin dashboard where i can get all the Employee, Manager  list after clicking on Employee profile i can see all the timesheet of the Employee or Manager, then can update or delete their profile  
 
-curl -X PUT http://localhost:8080/projects/1/assign-manager/2 \
--H "Authorization: Bearer your_jwt_token_here"
-✅ 3. Add Member to Project
-PUT /projects/{projectId}/add-member/{userId}
-Roles allowed: SUPER_ADMIN, MANAGER
+i can assign manager to Employee can change the manager 
+see the list of admin, super admin , manager can update or deactivate them 
 
+make a creative dashboard and diolog box so i can add all given below functionality 
 
-curl -X PUT http://localhost:8080/projects/1/add-member/5 \
--H "Authorization: Bearer your_jwt_token_here"
-✅ 4. Get Projects by Manager
-GET /projects/by-manager/{managerId}
-Roles allowed: SUPER_ADMIN, MANAGER
- it gives response:
- [
+read the description, input and response then create dashbaord and dialog box to add given below functionality  
+
+Description: Get List of all ADMIN
+get all Admincurl --location 'http://localhost:8080/users/admin' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU'
+
+it response
+[
     {
-        "id": 1,
-        "name": "PEPS",
-        "managerId": 2,
-        "managerName": "Manager",
-        "teamMemberIds": [
-            3
-        ],
-        "teamMemberNames": [
-            "Employee"
-        ]
-    },
-    {
-        "id": 4,
-        "name": "ADAS",
-        "managerId": 2,
-        "managerName": "Manager",
-        "teamMemberIds": [],
-        "teamMemberNames": []
+        "id": 5,
+        "name": "John Admin",
+        "email": "admin@cstech.ai",
+        "role": "ADMIN",
+        "managerId": null,
+        "managerName": null
     }
 ]
 
-curl -X GET http://localhost:8080/projects/by-manager/2 \
--H "Authorization: Bearer your_jwt_token_here"
-✅ 5. Get Projects by User
-GET /projects/by-user/{userId}
-Public (no role check)
-it gives response:
+Description: Get List of all ADMIN, EMPLOYEE, MANAGER, SUPER_ADMIN
+curl --location 'http://localhost:8080/users/all' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU'
+it response :
 [
     {
         "id": 1,
-        "name": "PEPS",
-        "managerId": 2,
-        "managerName": "Manager",
-        "teamMemberIds": [
-            3
-        ],
-        "teamMemberNames": [
-            "Employee"
-        ]
-    }
-]
-
-curl -X GET http://localhost:8080/projects/by-user/3 \
--H "Authorization: Bearer your_jwt_token_here"
-✅ 6. Get All Projects
-GET /projects/all
-Role required: SUPER_ADMIN
-response:
-    {
-        "id": 1,
-        "name": "PEPS",
-        "managerId": 2,
-        "managerName": "Manager",
-        "teamMemberIds": [
-            3
-        ],
-        "teamMemberNames": [
-            "Employee"
-        ]
-    },
-    {
-        "id": 4,
-        "name": "ADAS",
-        "managerId": 2,
-        "managerName": "Manager",
-        "teamMemberIds": [],
-        "teamMemberNames": []
-    },
-    {
-        "id": 5,
-        "name": "TEST",
+        "name": "Super Admin",
+        "email": "superadmin@cstech.ai",
+        "role": "SUPER_ADMIN",
         "managerId": null,
-        "managerName": null,
-        "teamMemberIds": [],
-        "teamMemberNames": []
-    }
-]
-
-curl -X GET http://localhost:8080/projects/all \
--H "Authorization: Bearer your_jwt_token_here"
-✅ 7. Get Project Audit Logs
-GET /projects/audit-logs
-Role required: SUPER_ADMIN
-
-
-curl -X GET http://localhost:8080/projects/audit-logs \
--H "Authorization: Bearer your_jwt_token_here"
-
-response:[
-    {
-        "id": 1,
-        "projectId": 5,
-        "projectName": "TEST",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 1,
-        "targetUserName": "Super Admin",
-        "action": "CREATED",
-        "timestamp": "2025-07-23T18:51:12.856018"
+        "managerName": null
     },
     {
         "id": 2,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 4,
-        "targetUserName": "Manager2",
-        "action": "ASSIGNED_MANAGER",
-        "timestamp": "2025-07-23T19:00:21.6082"
-    },
-    {
-        "id": 3,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 4,
-        "targetUserName": "Manager2",
-        "action": "REMOVED_MANAGER",
-        "timestamp": "2025-07-23T19:06:29.443472"
+        "name": "John Doe",
+        "email": "employee@cstech.ai",
+        "role": "EMPLOYEE",
+        "managerId": 4,
+        "managerName": "John Cena"
     },
     {
         "id": 4,
-        "projectId": 4,
-        "projectName": "ADAS",
-        "actorId": 1,
-        "actorName": "Super Admin",
-        "targetUserId": 2,
-        "targetUserName": "Manager",
-        "action": "ASSIGNED_MANAGER",
-        "timestamp": "2025-07-23T19:06:29.462985"
+        "name": "John Cena",
+        "email": "manager@cstech.ai",
+        "role": "MANAGER",
+        "managerId": null,
+        "managerName": null
+    },
+    {
+        "id": 5,
+        "name": "John Admin",
+        "email": "admin@cstech.ai",
+        "role": "ADMIN",
+        "managerId": null,
+        "managerName": null
     }
 ]
+
+Description: assign MANAGER to EMPLOYEE 
+curl --location --request PUT 'http://localhost:8080/users/assignManager?userId=2&managerId=4' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiRU1QTE9ZRUUiLCJzdWIiOiJlbXBsb3llZUBjc3RlY2guYWkiLCJpYXQiOjE3NTQwNTE0NTEsImV4cCI6MTc1NDA1ODY1MX0.PuY2PKdKfWW7cAoa9qIXPYk7sCuVfeMMKs8xs2ZzTyQ'
+
+it response
+{
+    "timestamp": "2025-08-01T18:15:01.2834099",
+    "status": 200,
+    "errorCode": "OK",
+    "success": true,
+    "message": "Manager assigned successfully",
+    "data": null
+}
+
+Description: UPDATE EMPLOYEE by id
+    curl --location --request PUT 'http://localhost:8080/users/update/2' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "John Banega Don",
+    "email": "employee@cstech.ai",
+    "role": "EMPLOYEE"
+}'
+it reponse {
+    "timestamp": "2025-08-01T17:55:35.5032863",
+    "status": 200,
+    "errorCode": "OK",
+    "success": true,
+    "message": "User updated successfully",
+    "data": null
+}
+
+Description: Get List of all ADMIN, SUPER_ADMIN, MANAGER
+curl --location 'http://localhost:8080/users/privileged' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU'
+[
+    {
+        "id": 1,
+        "name": "Super Admin",
+        "email": "superadmin@cstech.ai",
+        "role": "SUPER_ADMIN"
+    },
+    {
+        "id": 4,
+        "name": "John Cena",
+        "email": "manager@cstech.ai",
+        "role": "MANAGER"
+    },
+    {
+        "id": 5,
+        "name": "John Admin",
+        "email": "admin@cstech.ai",
+        "role": "ADMIN"
+    }
+]
+
+Description: delete MANAGER, EMPLOYEE, ADMIN, SUPER_ADMIN by id
+curl --location --request DELETE 'http://localhost:8080/users/2' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU'
+it response{
+    "timestamp": "2025-08-01T18:00:36.1565109",
+    "status": 200,
+    "errorCode": "OK",
+    "success": true,
+    "message": "User deleted successfully",
+    "data": null
+}
+
+Description: reactivate DELETED USER
+here 2 is employee id
+curl --location --request PUT 'http://localhost:8080/users/2/reactivate' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA0OTM5OSwiZXhwIjoxNzU0MDU2NTk5fQ.qXsjW2GDXPvH1HryV0vIsTTo27ON8dRQaWRbtBpWnVU'
+{
+    "timestamp": "2025-08-01T18:02:21.632852",
+    "status": 200,
+    "errorCode": "OK",
+    "success": true,
+    "message": "User reactivated successfully",
+    "data": null
+}
+
+Description: REMOVED_MANAGER 
+here 2 is employee id 
+curl --location --request PUT 'http://localhost:8080/users/2/remove-manager' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiRU1QTE9ZRUUiLCJzdWIiOiJlbXBsb3llZUBjc3RlY2guYWkiLCJpYXQiOjE3NTQwNTE0NTEsImV4cCI6MTc1NDA1ODY1MX0.PuY2PKdKfWW7cAoa9qIXPYk7sCuVfeMMKs8xs2ZzTyQ'
+{
+    "timestamp": "2025-08-01T18:14:23.6216757",
+    "status": 200,
+    "errorCode": "OK",
+    "success": true,
+    "message": "Manager assignment removed successfully",
+    "data": null
+}
+
+Description: get all timehseet by userId
+curl --location 'http://localhost:8080/sheets/team/2' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJfQURNSU4iLCJzdWIiOiJzdXBlcmFkbWluQGNzdGVjaC5haSIsImlhdCI6MTc1NDA1Mzc0MSwiZXhwIjoxNzU0MDYwOTQxfQ.v6TXBoAnEVh7gEWQzzTkv2MdJwAB8bTUi849O5V3ZwM' \
+--header 'Content-Type: application/json'

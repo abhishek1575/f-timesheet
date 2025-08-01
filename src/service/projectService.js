@@ -48,3 +48,17 @@ export const createProject = async (projectData) => {
 export const getAllPrivilegedUsers = async () => {
   return axios.get(`${config.BASE_URL}users/managers`, getAuthHeaders());
 };
+
+// src/service/projectService.js
+export async function getProjectsByManagerId(managerId) {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(
+    `${config.BASE_URL}projects/by-manager/${managerId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+}

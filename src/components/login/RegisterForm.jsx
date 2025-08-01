@@ -220,7 +220,7 @@ const RegisterForm = () => {
               >
                 <MenuItem value="ADMIN">ADMIN</MenuItem>
                 <MenuItem value="MANAGER">MANAGER</MenuItem>
-                {/* <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem> */}
+                <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem>
                 <MenuItem value="SUPER_ADMIN">SUPER ADMIN</MenuItem>
               </Select>
             </FormControl>

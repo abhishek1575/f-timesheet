@@ -237,7 +237,7 @@ export default function CustomizedTables() {
               filteredTimesheets.map((sheet, index) => (
                 <StyledTableRow key={sheet.id || `${sheet.project}-${index}`}>
                   <StyledTableCell align="right">
-                    {sheet.project}
+                    {sheet.projectName}
                   </StyledTableCell>
                   <StyledTableCell align="left">
                     {sheet.taskName}

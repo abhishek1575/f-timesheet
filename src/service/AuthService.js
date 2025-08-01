@@ -18,7 +18,7 @@ class AuthService {
       }
     );
     if (response.data.jwt) {
-      // console.log("We are Logged in");
+      
       sessionStorage.setItem("UserId", response.data.id);
       sessionStorage.setItem("Email", response.data.email);
       sessionStorage.setItem("Name", response.data.name);
@@ -26,11 +26,24 @@ class AuthService {
       sessionStorage.setItem("type", response.data.type);
       sessionStorage.setItem("token", response.data.jwt);
       sessionStorage.setItem("isLoggedIn", true);
-      console.log(sessionStorage.getItem("UserId"));
-      console.log(sessionStorage.getItem("Email"));
-      console.log(sessionStorage.getItem("Name"));
-      console.log(sessionStorage.getItem("Email"));
-      console.log(sessionStorage.getItem("Role"));
+
+      // ✅ Set ManagerId if available
+      if (
+        response.data.managerId !== null &&
+        response.data.managerId !== undefined
+      ) {
+        sessionStorage.setItem("ManagerId", response.data.managerId);
+      } else {
+        sessionStorage.removeItem("ManagerId"); // cleanup for admins
+      }
+
+      // Optional: Debug logging
+      console.log("UserId:", sessionStorage.getItem("UserId"));
+      console.log("Email:", sessionStorage.getItem("Email"));
+      console.log("Name:", sessionStorage.getItem("Name"));
+      console.log("Role:", sessionStorage.getItem("Role"));
+      console.log("ManagerId:", sessionStorage.getItem("ManagerId"));
+
     }
     return response;
   }

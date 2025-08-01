@@ -42,15 +42,7 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
     if (open) fetchRejectedTimesheets();
   }, [open]);
 
-  // const handleResubmit = async (id) => {
-  //   try {
-  //     await submitTimesheet(id);
-  //     alert("Timesheet Resubmitted Successfully!");
-  //     fetchRejectedTimesheets();
-  //   } catch (error) {
-  //     alert("Failed to resubmit timesheet.");
-  //   }
-  // };
+
 
   const handleResubmit = async (id) => {
     try {
@@ -150,7 +142,7 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
                     sx={{ backgroundColor: "#424242" }}
                   >
                     <TableCell sx={{ color: "#e0e0e0" }}>
-                      {ts.project}
+                      {ts.projectName}
                     </TableCell>
                     <TableCell sx={{ color: "#e0e0e0" }}>
                       {ts.taskName}

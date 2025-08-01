@@ -64,22 +64,6 @@ export const createTimesheet = async (timesheetData) => {
 
 
 
-// export const createTimesheet = async (timesheetData) => {
-//   const token = sessionStorage.getItem("token");
-//   try {
-//     const response = await axios.post(`${config.BASE_URL}sheets/create`, timesheetData, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error("API Error:", error);
-//     throw error;
-//   }
-// };
-
 
 export const submitTimesheet = async (timesheetId) => {
   const token = sessionStorage.getItem("token");
@@ -192,17 +176,22 @@ export const approveTimesheetById = async (id) => {
   });
 };
 
-export const rejectTimesheetById = async (id, remark) => {
+// Updated rejectTimesheetById service function
+export const rejectTimesheetById = async (id, comment) => {
   const token = sessionStorage.getItem("token");
-  await fetch(
-    `${config.BASE_URL}sheets/${id}/reject?comment=${encodeURIComponent(
-      remark
-    )}`,
-    {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  const response = await fetch(`${config.BASE_URL}sheets/${id}/reject`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ comment }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to reject timesheet");
+  }
+  return response.json();
 };
 
 export const resubmitTimesheet = async (timesheetId) => {

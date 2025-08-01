@@ -21,39 +21,63 @@ function Login() {
   const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-      const response = await AuthService.login(normalizedEmail, password);
-      if (response.data.jwt) {
-        sessionStorage.setItem("token", response.data.jwt);
-        sessionStorage.setItem("Role", response.data.role);
-        sessionStorage.setItem("isLoggedIn", "true");
-        setError("");
-        setShowError(false);
-        switch (response.data.role) {
-          case "EMPLOYEE":
-            navigate("/edashboard");
-            break;
-          case "MANAGER":
-            navigate("/mdashboard");
-            break;
-          case "ADMIN":
-            navigate("/adashboard");
-            break;
-          case "SUPER_ADMIN":
-            navigate("/sdashboard");
-            break;
-          default:
-            throw new Error("Unknown role");
-        }
-      }
-    } catch (error) {
-      setError(error.response?.data?.message || "Invalid email or password");
-      setShowError(true);
-    }
-  };
+ const handleLogin = async (e) => {
+   e.preventDefault();
+   try {
+     const normalizedEmail = email.trim().toLowerCase();
+     const response = await AuthService.login(normalizedEmail, password);
+
+     if (response.data.jwt) {
+       // 🔐 Save essential session values
+       sessionStorage.setItem("token", response.data.jwt);
+       sessionStorage.setItem("Role", response.data.role);
+       sessionStorage.setItem("isLoggedIn", "true");
+       sessionStorage.setItem("UserId", response.data.id);
+       sessionStorage.setItem("Email", response.data.email);
+       sessionStorage.setItem("Name", response.data.name);
+
+       // ✅ Set ManagerId logic
+       if (
+         response.data.managerId !== null &&
+         response.data.managerId !== undefined
+       ) {
+         sessionStorage.setItem("ManagerId", response.data.managerId);
+       } else if (
+         response.data.role === "MANAGER" ||
+         response.data.role === "SUPER_ADMIN"
+       ) {
+         sessionStorage.setItem("ManagerId", response.data.id); // 👈 Fallback to own id
+       } else {
+         sessionStorage.removeItem("ManagerId");
+       }
+
+       setError("");
+       setShowError(false);
+
+       // 🚀 Navigate by role
+       switch (response.data.role) {
+         case "EMPLOYEE":
+           navigate("/edashboard");
+           break;
+         case "MANAGER":
+           navigate("/mdashboard");
+           break;
+         case "ADMIN":
+           navigate("/adashboard");
+           break;
+         case "SUPER_ADMIN":
+           navigate("/sdashboard");
+           break;
+         default:
+           throw new Error("Unknown role");
+       }
+     }
+   } catch (error) {
+     setError(error.response?.data?.message || "Invalid email or password");
+     setShowError(true);
+   }
+ };
+
 
   const handleSnackbarClose = () => {
     setShowError(false);
@@ -151,9 +175,9 @@ function Login() {
               Get Started
             </Button>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Link href="/signup" variant="body2">
+              {/* <Link href="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}
-              </Link>
+              </Link> */}
               <Link href="/forgotpassword" variant="body2">
                 Forgot password?
               </Link>
