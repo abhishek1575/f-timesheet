@@ -64,8 +64,8 @@ const UpdateTimesheetDialog = ({
           />
           <TextField
             label="Project Name"
-            name="projectName"
-            value={timesheet.projectName || ""} // Simplified fallback
+            name="projectName" // Must match API field name
+            value={timesheet.projectName || ""}
             onChange={onChange}
             fullWidth
             variant="outlined"

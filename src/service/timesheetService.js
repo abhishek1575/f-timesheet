@@ -241,3 +241,10 @@ export const fetchAdminPendingTimesheets = async () => {
   if (!res.ok) throw new Error("Failed to fetch admin pending timesheets");
   return res.json();
 };
+
+export const getRejectedTimesheets = () => {
+  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+  return axios.get(`${config.BASE_URL}sheets/rejected/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};

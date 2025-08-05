@@ -101,9 +101,9 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
               <Table>
                 <TableHead sx={{ backgroundColor: "#e0e0e0" }}>
                   <TableRow>
-                    <TableCell>
+                    {/* <TableCell>
                       <strong>ID</strong>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>
                       <strong>Employee</strong>
                     </TableCell>
@@ -127,7 +127,7 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
                 <TableBody>
                   {timesheets.map((sheet) => (
                     <TableRow key={sheet.id} hover>
-                      <TableCell>{sheet.id}</TableCell>
+                      {/* <TableCell>{sheet.id}</TableCell> */}
                       <TableCell>{sheet.userName}</TableCell>
                       <TableCell>{sheet.projectName}</TableCell>
                       <TableCell>{sheet.taskName}</TableCell>

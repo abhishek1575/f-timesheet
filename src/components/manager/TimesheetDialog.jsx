@@ -185,7 +185,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <strong>ID</strong>
+                      <strong>Project Name</strong>
                     </TableCell>
                     <TableCell>
                       <strong>Task Name</strong>
@@ -207,7 +207,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                 <TableBody>
                   {filteredTimesheets.map((sheet) => (
                     <TableRow key={sheet.id} hover>
-                      <TableCell>{sheet.id}</TableCell>
+                      <TableCell>{sheet.projectName}</TableCell>
                       <TableCell>{sheet.taskName}</TableCell>
                       <TableCell>{sheet.startDate}</TableCell>
                       <TableCell>{sheet.endDate}</TableCell>
