@@ -222,8 +222,8 @@ export default function CustomizedTables() {
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
             <TableRow>
-              <StyledTableCell align="right">Project&nbsp;</StyledTableCell>
-              <StyledTableCell align="right">Task Name</StyledTableCell>
+              <StyledTableCell align="left">Project&nbsp;</StyledTableCell>
+              <StyledTableCell align="left">Task Name</StyledTableCell>
               <StyledTableCell align="right">Start Date&nbsp;</StyledTableCell>
               <StyledTableCell align="right">End Date&nbsp;</StyledTableCell>
               <StyledTableCell align="right">Effort(Hrs)&nbsp;</StyledTableCell>
@@ -236,7 +236,7 @@ export default function CustomizedTables() {
             {filteredTimesheets.length > 0 ? (
               filteredTimesheets.map((sheet, index) => (
                 <StyledTableRow key={sheet.id || `${sheet.project}-${index}`}>
-                  <StyledTableCell align="right">
+                  <StyledTableCell align="left">
                     {sheet.projectName}
                   </StyledTableCell>
                   <StyledTableCell align="left">

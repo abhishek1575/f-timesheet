@@ -242,9 +242,11 @@ export const fetchAdminPendingTimesheets = async () => {
   return res.json();
 };
 
-export const getRejectedTimesheets = () => {
-  const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-  return axios.get(`${config.BASE_URL}sheets/rejected/me`, {
+export const getRejectedTimesheets = async (token) => {
+  const response = await axios.get(`${config.BASE_URL}sheets/rejected`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  return response.data; // ✅ Important
 };
+
+

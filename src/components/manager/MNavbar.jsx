@@ -1,4 +1,4 @@
-import React, { useState,  } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconButton,
   Menu,
@@ -12,6 +12,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Badge,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -27,6 +30,7 @@ import PendingTimesheetDialog from "./PendingTimesheetDialog";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RejectedTimesheetDialog from "../component/RejectedTimesheetDialog";
 import UserProfileDialog from "../component/UserProfileDialog";
+import { getRejectedTimesheets } from "../../service/timesheetService";
 
 export default function MNavbar() {
   const [auth, setAuth] = useState(true);
@@ -36,9 +40,11 @@ export default function MNavbar() {
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [open, setOpen] = useState(false);
-
   const [pendingTimesheets, setPendingTimesheets] = useState([]);
   const [rejectedDialogOpen, setRejectedDialogOpen] = useState(false);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [showRejectedSnackbar, setShowRejectedSnackbar] = useState(false);
+  const [showPendingSnackbar, setShowPendingSnackbar] = useState(false);
 
   const [profileAnchorEl, setProfileAnchorEl] = useState(null); // for AccountCircle
 
@@ -46,8 +52,48 @@ export default function MNavbar() {
 
   const closeProfileMenu = () => setProfileAnchorEl(null);
 
-
   const navigate = useNavigate();
+
+  const fetchRejectedCount = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) return;
+
+      const res = await getRejectedTimesheets(token);
+      console.log("REJECTED RES DATA:", res);
+
+      const count = Array.isArray(res) ? res.length : 0;
+      setRejectedCount(count);
+
+      if (count > 0 && !sessionStorage.getItem("shownRejectedPopup")) {
+        setShowRejectedSnackbar(true);
+        sessionStorage.setItem("shownRejectedPopup", "true");
+      }
+    } catch (error) {
+      console.error("Error fetching rejected count", error);
+      setRejectedCount(0);
+    }
+  };
+
+  const fetchPendingTimesheets = async () => {
+    const token = sessionStorage.getItem("token");
+    const res = await fetch(`${config.BASE_URL}sheets/pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setPendingTimesheets(data);
+    setPendingCount(data.length);
+
+    if (data.length > 0 && !sessionStorage.getItem("shownPendingPopup")) {
+      setShowPendingSnackbar(true);
+      sessionStorage.setItem("shownPendingPopup", "true");
+    }
+  };
+
+  useEffect(() => {
+    fetchRejectedCount();
+    fetchPendingTimesheets();
+  }, []);
 
   const handleOpenTimesheet = () => setOpen(true);
   const handleCloseTimesheet = () => setOpen(false);
@@ -103,15 +149,6 @@ export default function MNavbar() {
     setOpenProfileDialog(false);
   };
 
-  const fetchPendingTimesheets = async () => {
-    const token = sessionStorage.getItem("token");
-    const res = await fetch(`${config.BASE_URL}sheets/pending`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setPendingTimesheets(data);
-  };
-
   const handleFactCheckClick = async () => {
     await fetchPendingTimesheets();
     setDialogSource("factCheck");
@@ -122,6 +159,11 @@ export default function MNavbar() {
     await fetchPendingTimesheets();
     setDialogSource("notification");
     setDialogOpen(true);
+  };
+
+  const handleRejectedDialogClose = () => {
+    setRejectedDialogOpen(false);
+    fetchRejectedCount();
   };
 
   return (
@@ -170,12 +212,16 @@ export default function MNavbar() {
                 color="inherit"
                 onClick={handleNotificationClick}
               >
-                <FactCheckIcon />
+                <Badge badgeContent={pendingCount} color="error">
+                  <FactCheckIcon />
+                </Badge>
               </IconButton>
             </Tooltip>
-            <Tooltip title="Reject Timesheet" arrow placement="bottom">
+            <Tooltip title="Rejected Timesheet" arrow placement="bottom">
               <IconButton onClick={() => setRejectedDialogOpen(true)}>
-                <CancelIcon color="error" />
+                <Badge badgeContent={rejectedCount} color="error">
+                  <CancelIcon color="error" />
+                </Badge>
               </IconButton>
             </Tooltip>
           </Box>
@@ -294,16 +340,49 @@ export default function MNavbar() {
 
               <RejectedTimesheetDialog
                 open={rejectedDialogOpen}
-                onClose={(event, reason) => {
-                  // Prevent closing on backdrop click or ESC key
-                  if (
-                    reason !== "backdropClick" &&
-                    reason !== "escapeKeyDown"
-                  ) {
-                    setRejectedDialogOpen(false);
-                  }
-                }}
+                onClose={handleRejectedDialogClose}
               />
+
+              <Snackbar
+                open={showRejectedSnackbar}
+                autoHideDuration={6000}
+                onClose={() => setShowRejectedSnackbar(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              >
+                <Alert
+                  onClick={() => {
+                    setShowRejectedSnackbar(false);
+                    setRejectedDialogOpen(true);
+                  }}
+                  severity="warning"
+                  sx={{ width: "100%", cursor: "pointer" }}
+                  elevation={6}
+                  variant="filled"
+                >
+                  You have {rejectedCount} rejected timesheet
+                  {rejectedCount > 1 ? "s" : ""}. Click to review.
+                </Alert>
+              </Snackbar>
+              <Snackbar
+                open={showPendingSnackbar}
+                autoHideDuration={6000}
+                onClose={() => setShowPendingSnackbar(false)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              >
+                <Alert
+                  onClick={() => {
+                    setShowPendingSnackbar(false);
+                    handleNotificationClick();
+                  }}
+                  severity="info"
+                  sx={{ width: "100%", cursor: "pointer" }}
+                  elevation={6}
+                  variant="filled"
+                >
+                  You have {pendingCount} pending timesheet
+                  {pendingCount > 1 ? "s" : ""} for approval. Click to review.
+                </Alert>
+              </Snackbar>
             </>
           )}
         </Toolbar>
