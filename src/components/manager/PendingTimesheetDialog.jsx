@@ -27,6 +27,8 @@ import {
   ListItemText,
   ListItemAvatar,
   ListItemButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   fetchPendingTimesheets,
@@ -287,6 +289,7 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
   const [remark, setRemark] = useState("");
   const [remarkError, setRemarkError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -310,8 +313,10 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
     try {
       await approveTimesheetById(id);
       refreshData();
+      setSnackbar({ open: true, message: 'Timesheet approved successfully!', severity: 'success' });
     } catch (error) {
       console.error("Error approving timesheet:", error);
+      setSnackbar({ open: true, message: 'Failed to approve timesheet.', severity: 'error' });
     }
   };
 
@@ -327,9 +332,18 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
       setRemarkError(false);
       setRemarkDialogOpen(false);
       refreshData();
+      setSnackbar({ open: true, message: 'Timesheet rejected successfully!', severity: 'warning' });
     } catch (error) {
       console.error("Rejection error:", error);
+      setSnackbar({ open: true, message: 'Failed to reject timesheet.', severity: 'error' });
     }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -549,6 +563,17 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }} variant="filled">
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

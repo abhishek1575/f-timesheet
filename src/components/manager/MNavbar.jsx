@@ -20,7 +20,6 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import FactCheckIcon from "@mui/icons-material/FactCheck";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +44,7 @@ export default function MNavbar({ onTimesheetCreated }) {
   const [openLogoutConfirm, setOpenLogoutConfirm] = useState(false);
   const [openProfileDialog, setOpenProfileDialog] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const [open, setOpen] = useState(false);
   const [pendingTimesheets, setPendingTimesheets] = useState([]);
   const [rejectedDialogOpen, setRejectedDialogOpen] = useState(false);
@@ -95,23 +95,41 @@ export default function MNavbar({ onTimesheetCreated }) {
 
   const fetchPendingTimesheets = async () => {
     const token = sessionStorage.getItem("token");
-    const res = await fetch(`${config.BASE_URL}sheets/pending`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setPendingTimesheets(data);
-    setPendingCount(data.length);
-
-    if (data.length > 0 && !sessionStorage.getItem("shownPendingPopup")) {
-      setShowPendingSnackbar(true);
-      sessionStorage.setItem("shownPendingPopup", "true");
+    if (!token) return;
+    try {
+      const res = await fetch(`${config.BASE_URL}sheets/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newCount = Array.isArray(data) ? data.length : 0;
+        setPendingCount(prevCount => {
+            if (newCount > prevCount) {
+                setHasNewNotification(true);
+                if (!sessionStorage.getItem("shownPendingPopup")) {
+                    setShowPendingSnackbar(true);
+                    sessionStorage.setItem("shownPendingPopup", "true");
+                }
+            }
+            return newCount;
+        });
+        setPendingTimesheets(data);
+      } else {
+        console.error("Failed to fetch pending timesheets");
+      }
+    } catch (error) {
+      console.error("Error fetching pending timesheets:", error);
     }
   };
 
   useEffect(() => {
     fetchUser();
     fetchRejectedCount();
-    fetchPendingTimesheets();
+    fetchPendingTimesheets(); // Initial fetch
+
+    const interval = setInterval(fetchPendingTimesheets, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   const handleOpenTimesheet = () => setOpen(true);
@@ -123,7 +141,6 @@ export default function MNavbar({ onTimesheetCreated }) {
   };
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [dialogSource, setDialogSource] = useState("");
 
   const handleMenu = (event) => {
@@ -168,16 +185,11 @@ export default function MNavbar({ onTimesheetCreated }) {
     setOpenProfileDialog(false);
   };
 
-  const handleFactCheckClick = async () => {
-    await fetchPendingTimesheets();
-    setDialogSource("factCheck");
-    setDialogOpen(true);
-  };
-
   const handleNotificationClick = async () => {
     await fetchPendingTimesheets();
     setDialogSource("notification");
     setDialogOpen(true);
+    setHasNewNotification(false); // Reset the pulse animation
   };
 
   const handleRejectedDialogClose = () => {
@@ -238,17 +250,13 @@ export default function MNavbar({ onTimesheetCreated }) {
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Approve Requests" arrow placement="bottom">
-                  <IconButton
-                    size="large"
-                    color="inherit"
-                    onClick={handleNotificationClick}
-                  >
-                    <Badge badgeContent={pendingCount} color="error">
-                      <FactCheckIcon />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
+                <NotificationBadge
+                  count={pendingCount}
+                  hasNew={hasNewNotification}
+                  onClick={handleNotificationClick}
+                  title="Pending Approval Requests"
+                />
+
                 <Tooltip title="Rejected Timesheet" arrow placement="bottom">
                   <IconButton onClick={() => setRejectedDialogOpen(true)}>
                     <Badge badgeContent={rejectedCount} color="error">
@@ -259,8 +267,6 @@ export default function MNavbar({ onTimesheetCreated }) {
 
                 {auth && (
                   <>
-                    <NotificationBadge />
-
                     <Box
                       onClick={handleProfileClick}
                       sx={{
