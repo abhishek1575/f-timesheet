@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: "0.0.0.0", // Listen on all network interfaces
-    port: 5173, // Keep default port or change if needed
+    port: 5174, // Keep default port or change if needed
     strictPort: true,
   },
 });
