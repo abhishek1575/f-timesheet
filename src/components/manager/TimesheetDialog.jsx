@@ -19,10 +19,17 @@ import {
   Paper,
   CircularProgress,
   TableContainer,
+  useMediaQuery,
+  useTheme,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import CloseIcon from "@mui/icons-material/Close";
 
 const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [anchorEl, setAnchorEl] = useState(null);
   const [filterType, setFilterType] = useState("ALL");
   const [startDate, setStartDate] = useState("");
@@ -83,6 +90,12 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
       .toFixed(2);
   }, [filteredTimesheets]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toISOString().split("T")[0];
+  };
+
   return (
     <Dialog
       open={open}
@@ -94,8 +107,23 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
       disableEscapeKeyDown
       fullWidth
       maxWidth="md"
+      fullScreen={isSmallScreen}
+      scroll="paper"
     >
-      <DialogTitle>User Timesheet Records</DialogTitle>
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          User Timesheet Records
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={onClose}
+            aria-label="close"
+            size="small"
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       <DialogContent dividers>
         {loading ? (
           <Box
@@ -114,19 +142,22 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
               alignItems="center"
               mb={2}
               flexWrap="wrap"
-              gap={2}
+              gap={1}
             >
-              <Typography variant="subtitle1">
+              <Typography variant="subtitle1" noWrap>
                 Total Hours: <strong>{totalEffort}</strong>
               </Typography>
-              <Button
-                variant="outlined"
-                startIcon={<FilterAltIcon />}
-                onClick={(e) => setAnchorEl(e.currentTarget)}
-                disabled={timesheets.length === 0}
-              >
-                Filters
-              </Button>
+              <Tooltip title="Filter timesheets">
+                <Button
+                  variant="outlined"
+                  startIcon={<FilterAltIcon />}
+                  onClick={(e) => setAnchorEl(e.currentTarget)}
+                  disabled={timesheets.length === 0}
+                  size={isSmallScreen ? "small" : "medium"}
+                >
+                  Filters
+                </Button>
+              </Tooltip>
             </Box>
 
             {/* Filter Popover */}
@@ -134,7 +165,14 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
               open={Boolean(anchorEl)}
               anchorEl={anchorEl}
               onClose={() => setAnchorEl(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
             >
               <Box
                 p={2}
@@ -148,6 +186,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                 <Select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
+                  size="small"
                 >
                   <MenuItem value="ALL">All Time</MenuItem>
                   <MenuItem value="WEEK">This Week</MenuItem>
@@ -161,6 +200,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                   InputLabelProps={{ shrink: true }}
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  size="small"
                 />
                 <TextField
                   type="date"
@@ -168,6 +208,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                   InputLabelProps={{ shrink: true }}
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  size="small"
                 />
 
                 {projectList.length > 0 && (
@@ -175,6 +216,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                     value={project}
                     onChange={(e) => setProject(e.target.value)}
                     displayEmpty
+                    size="small"
                   >
                     <MenuItem value="">All Projects</MenuItem>
                     {projectList.map((proj) => (
@@ -185,7 +227,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                   </Select>
                 )}
 
-                <Button variant="contained" onClick={applyFilters}>
+                <Button variant="contained" onClick={applyFilters} size="small">
                   Apply Filters
                 </Button>
               </Box>
@@ -193,8 +235,30 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
 
             {/* Timesheet Table */}
             {filteredTimesheets.length > 0 ? (
-              <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }}>
+              <TableContainer
+                component={Paper}
+                sx={{
+                  maxHeight: "60vh",
+                  overflow: "auto",
+                  width: "100%",
+                  display: "block",
+                }}
+              >
+                <Table
+                  stickyHeader
+                  size="small"
+                  sx={{
+                    minWidth: 650,
+                    "& .MuiTableCell-root": {
+                      py: 1,
+                      px: 1,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "150px",
+                    },
+                  }}
+                >
                   <TableHead>
                     <TableRow>
                       <TableCell>
@@ -220,10 +284,14 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
                   <TableBody>
                     {filteredTimesheets.map((sheet) => (
                       <TableRow key={sheet.id} hover>
-                        <TableCell>{sheet.projectName}</TableCell>
-                        <TableCell>{sheet.taskName}</TableCell>
-                        <TableCell>{sheet.startDate}</TableCell>
-                        <TableCell>{sheet.endDate}</TableCell>
+                        <TableCell title={sheet.projectName}>
+                          {sheet.projectName}
+                        </TableCell>
+                        <TableCell title={sheet.taskName}>
+                          {sheet.taskName}
+                        </TableCell>
+                        <TableCell>{formatDate(sheet.startDate)}</TableCell>
+                        <TableCell>{formatDate(sheet.endDate)}</TableCell>
                         <TableCell>{sheet.effort}</TableCell>
                         <TableCell>{sheet.status}</TableCell>
                       </TableRow>
@@ -242,7 +310,7 @@ const TimesheetDialog = ({ open, onClose, timesheets, loading = false }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined" size="small">
           Close
         </Button>
       </DialogActions>
@@ -272,6 +340,7 @@ export default TimesheetDialog;
 //   TextField,
 //   Paper,
 //   CircularProgress,
+//   TableContainer,
 // } from "@mui/material";
 // import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
@@ -351,7 +420,12 @@ export default TimesheetDialog;
 //       <DialogTitle>User Timesheet Records</DialogTitle>
 //       <DialogContent dividers>
 //         {loading ? (
-//           <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+//           <Box
+//             display="flex"
+//             justifyContent="center"
+//             alignItems="center"
+//             py={4}
+//           >
 //             <CircularProgress />
 //           </Box>
 //         ) : (
@@ -384,7 +458,13 @@ export default TimesheetDialog;
 //               onClose={() => setAnchorEl(null)}
 //               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
 //             >
-//               <Box p={2} width={300} display="flex" flexDirection="column" gap={2}>
+//               <Box
+//                 p={2}
+//                 width={300}
+//                 display="flex"
+//                 flexDirection="column"
+//                 gap={2}
+//               >
 //                 <Typography variant="subtitle1">Filter Options</Typography>
 
 //                 <Select
@@ -435,45 +515,49 @@ export default TimesheetDialog;
 
 //             {/* Timesheet Table */}
 //             {filteredTimesheets.length > 0 ? (
-//               <Table component={Paper} sx={{ minWidth: 650 }}>
-//                 <TableHead>
-//                   <TableRow>
-//                     <TableCell>
-//                       <strong>Project Name</strong>
-//                     </TableCell>
-//                     <TableCell>
-//                       <strong>Task Name</strong>
-//                     </TableCell>
-//                     <TableCell>
-//                       <strong>Start Date</strong>
-//                     </TableCell>
-//                     <TableCell>
-//                       <strong>End Date</strong>
-//                     </TableCell>
-//                     <TableCell>
-//                       <strong>Effort (hrs)</strong>
-//                     </TableCell>
-//                     <TableCell>
-//                       <strong>Status</strong>
-//                     </TableCell>
-//                   </TableRow>
-//                 </TableHead>
-//                 <TableBody>
-//                   {filteredTimesheets.map((sheet) => (
-//                     <TableRow key={sheet.id} hover>
-//                       <TableCell>{sheet.projectName}</TableCell>
-//                       <TableCell>{sheet.taskName}</TableCell>
-//                       <TableCell>{sheet.startDate}</TableCell>
-//                       <TableCell>{sheet.endDate}</TableCell>
-//                       <TableCell>{sheet.effort}</TableCell>
-//                       <TableCell>{sheet.status}</TableCell>
+//               <TableContainer component={Paper}>
+//                 <Table sx={{ minWidth: 650 }}>
+//                   <TableHead>
+//                     <TableRow>
+//                       <TableCell>
+//                         <strong>Project Name</strong>
+//                       </TableCell>
+//                       <TableCell>
+//                         <strong>Task Name</strong>
+//                       </TableCell>
+//                       <TableCell>
+//                         <strong>Start Date</strong>
+//                       </TableCell>
+//                       <TableCell>
+//                         <strong>End Date</strong>
+//                       </TableCell>
+//                       <TableCell>
+//                         <strong>Effort (hrs)</strong>
+//                       </TableCell>
+//                       <TableCell>
+//                         <strong>Status</strong>
+//                       </TableCell>
 //                     </TableRow>
-//                   ))}
-//                 </TableBody>
-//               </Table>
+//                   </TableHead>
+//                   <TableBody>
+//                     {filteredTimesheets.map((sheet) => (
+//                       <TableRow key={sheet.id} hover>
+//                         <TableCell>{sheet.projectName}</TableCell>
+//                         <TableCell>{sheet.taskName}</TableCell>
+//                         <TableCell>{sheet.startDate}</TableCell>
+//                         <TableCell>{sheet.endDate}</TableCell>
+//                         <TableCell>{sheet.effort}</TableCell>
+//                         <TableCell>{sheet.status}</TableCell>
+//                       </TableRow>
+//                     ))}
+//                   </TableBody>
+//                 </Table>
+//               </TableContainer>
 //             ) : (
 //               <Box textAlign="center" py={4}>
-//                 <Typography variant="body1">No timesheets found for this user.</Typography>
+//                 <Typography variant="body1">
+//                   No timesheets found for this user.
+//                 </Typography>
 //               </Box>
 //             )}
 //           </>

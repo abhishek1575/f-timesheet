@@ -174,14 +174,11 @@ function Login() {
             >
               Get Started
             </Button>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              {/* <Link href="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
-              </Link> */}
-              <Link href="/forgotpassword" variant="body2">
-                Forgot password?
-              </Link>
-            </Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+            <Link href="/forgotpassword" variant="body2">
+              Forgot password?
+            </Link>
+          </Box>
           </Box>
         </Box>
       </Container>

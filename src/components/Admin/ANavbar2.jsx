@@ -297,7 +297,7 @@ export default function AdminDashboard() {
         open={showSnackbar} 
         autoHideDuration={6000} 
         onClose={() => setShowSnackbar(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
           onClose={() => setShowSnackbar(false)} 

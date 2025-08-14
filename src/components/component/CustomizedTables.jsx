@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Button,
@@ -20,11 +20,8 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { tableCellClasses } from "@mui/material/TableCell";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
-// const StyledTableCell = styled(TableCell)(({ theme }) => ({
-//   [`&.${tableCellClasses.head}`]: { background: "#424242", color: "#fff" },
-//   [`&.${tableCellClasses.body}`]: { fontSize: 14 },
-// }));
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -32,7 +29,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     color: "#fff",
     position: "sticky",
     top: 0,
-    zIndex: 10, // ensures it stays on top
+    zIndex: 10,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -51,10 +48,48 @@ export default function CustomizedTables({ timesheets = [] }) {
   const [endDate, setEndDate] = useState("");
   const [project, setProject] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: 'startDate',
+    direction: 'desc', // 'desc' for newest first
+  });
+
+  // Sorting function
+  const sortedTimesheets = useMemo(() => {
+    const sortableItems = [...filteredTimesheets];
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        // Handle date comparison differently
+        if (sortConfig.key === 'startDate' || sortConfig.key === 'endDate') {
+          const dateA = new Date(a[sortConfig.key]);
+          const dateB = new Date(b[sortConfig.key]);
+          if (dateA < dateB) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (dateA > dateB) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+          return 0;
+        }
+        
+        // Standard comparison for other fields
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredTimesheets, sortConfig]);
 
   // Update table whenever parent data changes
   useEffect(() => {
-    setFilteredTimesheets(timesheets || []);
+    const sorted = [...timesheets].sort((a, b) => 
+      new Date(b.startDate) - new Date(a.startDate)
+    );
+    setFilteredTimesheets(sorted || []);
   }, [timesheets]);
 
   const applyFilters = () => {
@@ -101,12 +136,21 @@ export default function CustomizedTables({ timesheets = [] }) {
     }
 
     setFilteredTimesheets(filtered);
-    setAnchorEl(null); // Close Popover after Apply
+    setAnchorEl(null);
   };
 
-  const totalEffort = filteredTimesheets
+  const totalEffort = sortedTimesheets
     .reduce((sum, sheet) => sum + (sheet.effort || 0), 0)
     .toFixed(2);
+
+  // Sort request handler
+  const requestSort = (key) => {
+    let direction = 'desc';
+    if (sortConfig.key === key && sortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   // Build unique project list (case-insensitive)
   const projectMap = new Map();
@@ -120,7 +164,7 @@ export default function CustomizedTables({ timesheets = [] }) {
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
-      filteredTimesheets.map((sheet) => ({
+      sortedTimesheets.map((sheet) => ({
         Project: sheet.projectName,
         "Task Name": sheet.taskName,
         "Start Date": sheet.startDate,
@@ -132,7 +176,7 @@ export default function CustomizedTables({ timesheets = [] }) {
       }))
     );
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Timesheets");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Timesheets");
 
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
@@ -143,7 +187,7 @@ export default function CustomizedTables({ timesheets = [] }) {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    saveAs(fileData, "Filtered_Timesheets.xlsx");
+    saveAs(fileData, `Timesheets_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const getStatusStyles = (status) => {
@@ -151,18 +195,26 @@ export default function CustomizedTables({ timesheets = [] }) {
 
     switch (normalized) {
       case "DRAFT":
-        return { backgroundColor: "#fef3c7", color: "#92400e" }; // yellow
+        return { backgroundColor: "#fef3c7", color: "#92400e" };
       case "PENDING":
-        return { backgroundColor: "#e0f2fe", color: "#0369a1" }; // light blue
+        return { backgroundColor: "#e0f2fe", color: "#0369a1" };
       case "APPROVED":
-        return { backgroundColor: "#bbf7d0", color: "#166534" }; // green
+        return { backgroundColor: "#bbf7d0", color: "#166534" };
       case "REJECTED":
-        return { backgroundColor: "#fecaca", color: "#991b1b" }; // red
+        return { backgroundColor: "#fecaca", color: "#991b1b" };
       case "REVISED":
-        return { backgroundColor: "#ede9fe", color: "#6b21a8" }; // purple
+        return { backgroundColor: "#ede9fe", color: "#6b21a8" };
       default:
-        return { backgroundColor: "#f3f4f6", color: "#374151" }; // neutral fallback
+        return { backgroundColor: "#f3f4f6", color: "#374151" };
     }
+  };
+
+  // Function to render sort indicator
+  const renderSortIndicator = (key) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === 'asc' ? 
+      <ArrowUpwardIcon fontSize="small" sx={{ ml: 0.5 }} /> : 
+      <ArrowDownwardIcon fontSize="small" sx={{ ml: 0.5 }} />;
   };
 
   return (
@@ -233,7 +285,7 @@ export default function CustomizedTables({ timesheets = [] }) {
             onChange={(e) => setEndDate(e.target.value)}
           />
 
-          {projectList.length > 0 && (
+          {/* {projectList.length > 0 && (
             <Select
               value={project}
               onChange={(e) => setProject(e.target.value)}
@@ -246,7 +298,7 @@ export default function CustomizedTables({ timesheets = [] }) {
                 </MenuItem>
               ))}
             </Select>
-          )}
+          )} */}
 
           <Button variant="contained" onClick={applyFilters}>
             Apply Filters
@@ -258,26 +310,47 @@ export default function CustomizedTables({ timesheets = [] }) {
       <TableContainer
         component={Paper}
         sx={{
-          maxHeight: "calc(100vh - 240px)", // adjust if needed
+          maxHeight: "calc(100vh - 240px)",
           overflowY: "auto",
         }}
       >
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
+        <Table sx={{ minWidth: 700 }} aria-label="customized table" stickyHeader>
           <TableHead>
             <TableRow>
-              <StyledTableCell align="left">Project&nbsp;</StyledTableCell>
+              <StyledTableCell align="left">Project</StyledTableCell>
               <StyledTableCell align="left">Task Name</StyledTableCell>
-              <StyledTableCell align="right">Start Date&nbsp;</StyledTableCell>
-              <StyledTableCell align="right">End Date&nbsp;</StyledTableCell>
-              <StyledTableCell align="right">Effort(Hrs)&nbsp;</StyledTableCell>
-              <StyledTableCell align="right">Approver&nbsp;</StyledTableCell>
-              <StyledTableCell align="right">Assignee&nbsp;</StyledTableCell>
-              <StyledTableCell align="center">Status&nbsp;</StyledTableCell>
+              <StyledTableCell 
+                align="right"
+                onClick={() => requestSort('startDate')}
+                sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+              >
+                Start Date
+                {renderSortIndicator('startDate')}
+              </StyledTableCell>
+              <StyledTableCell 
+                align="right"
+                onClick={() => requestSort('endDate')}
+                sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+              >
+                End Date
+                {renderSortIndicator('endDate')}
+              </StyledTableCell>
+              <StyledTableCell 
+                align="right"
+                onClick={() => requestSort('effort')}
+                sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+              >
+                Effort(Hrs)
+                {renderSortIndicator('effort')}
+              </StyledTableCell>
+              <StyledTableCell align="right">Approver</StyledTableCell>
+              <StyledTableCell align="right">Assignee</StyledTableCell>
+              <StyledTableCell align="center">Status</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredTimesheets.length > 0 ? (
-              filteredTimesheets.map((sheet, index) => (
+            {sortedTimesheets.length > 0 ? (
+              sortedTimesheets.map((sheet, index) => (
                 <StyledTableRow
                   key={sheet.id || `${sheet.projectName}-${index}`}
                 >
@@ -345,6 +418,10 @@ export default function CustomizedTables({ timesheets = [] }) {
     </Box>
   );
 }
+//-----------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------
+
+
 
 // import React, { useState, useEffect } from "react";
 // import {
@@ -368,11 +445,6 @@ export default function CustomizedTables({ timesheets = [] }) {
 // import { tableCellClasses } from "@mui/material/TableCell";
 // import * as XLSX from "xlsx";
 // import { saveAs } from "file-saver";
-
-// // const StyledTableCell = styled(TableCell)(({ theme }) => ({
-// //   [`&.${tableCellClasses.head}`]: { background: "#424242", color: "#fff" },
-// //   [`&.${tableCellClasses.body}`]: { fontSize: 14 },
-// // }));
 
 // const StyledTableCell = styled(TableCell)(({ theme }) => ({
 //   [`&.${tableCellClasses.head}`]: {
@@ -494,6 +566,25 @@ export default function CustomizedTables({ timesheets = [] }) {
 //     saveAs(fileData, "Filtered_Timesheets.xlsx");
 //   };
 
+//   const getStatusStyles = (status) => {
+//     const normalized = (status || "").trim().toUpperCase();
+
+//     switch (normalized) {
+//       case "DRAFT":
+//         return { backgroundColor: "#fef3c7", color: "#92400e" }; // yellow
+//       case "PENDING":
+//         return { backgroundColor: "#e0f2fe", color: "#0369a1" }; // light blue
+//       case "APPROVED":
+//         return { backgroundColor: "#bbf7d0", color: "#166534" }; // green
+//       case "REJECTED":
+//         return { backgroundColor: "#fecaca", color: "#991b1b" }; // red
+//       case "REVISED":
+//         return { backgroundColor: "#ede9fe", color: "#6b21a8" }; // purple
+//       default:
+//         return { backgroundColor: "#f3f4f6", color: "#374151" }; // neutral fallback
+//     }
+//   };
+
 //   return (
 //     <Box sx={{ p: 0, m: 0 }}>
 //       <Box
@@ -601,7 +692,7 @@ export default function CustomizedTables({ timesheets = [] }) {
 //               <StyledTableCell align="right">Effort(Hrs)&nbsp;</StyledTableCell>
 //               <StyledTableCell align="right">Approver&nbsp;</StyledTableCell>
 //               <StyledTableCell align="right">Assignee&nbsp;</StyledTableCell>
-//               <StyledTableCell align="right">Status&nbsp;</StyledTableCell>
+//               <StyledTableCell align="center">Status&nbsp;</StyledTableCell>
 //             </TableRow>
 //           </TableHead>
 //           <TableBody>
@@ -635,30 +726,29 @@ export default function CustomizedTables({ timesheets = [] }) {
 //                   <StyledTableCell align="right">
 //                     {sheet.userName}
 //                   </StyledTableCell>
-//                   <StyledTableCell align="right">
-//                     <span
-//                       style={{
-//                         backgroundColor:
-//                           sheet.status === "Approved"
-//                             ? "#bbf7d0"
-//                             : sheet.status === "Rejected"
-//                             ? "#fecaca"
-//                             : "#dbeafe",
-//                         color:
-//                           sheet.status === "Approved"
-//                             ? "#166534"
-//                             : sheet.status === "Rejected"
-//                             ? "#991b1b"
-//                             : "#1e40af",
-//                         padding: "2px 8px",
-//                         borderRadius: "4px",
-//                         fontSize: "0.75rem",
-//                         fontWeight: 600,
-//                         display: "inline-block",
-//                       }}
-//                     >
-//                       {sheet.status}
-//                     </span>
+//                   <StyledTableCell align="center">
+//                     {(() => {
+//                       const { backgroundColor, color } = getStatusStyles(
+//                         sheet.status
+//                       );
+//                       return (
+//                         <span
+//                           style={{
+//                             backgroundColor,
+//                             color,
+//                             padding: "4px 10px",
+//                             borderRadius: "4px",
+//                             fontSize: "0.75rem",
+//                             fontWeight: 600,
+//                             display: "inline-block",
+//                             whiteSpace: "nowrap",
+//                             textTransform: "capitalize",
+//                           }}
+//                         >
+//                           {sheet.status}
+//                         </span>
+//                       );
+//                     })()}
 //                   </StyledTableCell>
 //                 </StyledTableRow>
 //               ))

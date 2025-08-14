@@ -55,6 +55,16 @@ const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
   const [expanded, setExpanded] = useState(false);
   const theme = useTheme();
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD format
+    } catch (e) {
+      return "N/A";
+    }
+  };
+
   const handleUserNameClick = () => {
     setExpanded(!expanded);
   };
@@ -124,7 +134,7 @@ const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
                 <CalendarToday
                   sx={{ fontSize: 16, mr: 0.5, verticalAlign: "middle" }}
                 />
-                Submitted: {sheet.submittedDate || "N/A"}
+                Submitted: {formatDate(sheet.submittedDate)}
               </Typography>
             </Box>
           }
@@ -213,7 +223,9 @@ const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
                       />
                       Start Date
                     </Typography>
-                    <Typography variant="body1">{sheet.startDate}</Typography>
+                    <Typography variant="body1">
+                      {formatDate(sheet.startDate)}
+                    </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -228,7 +240,9 @@ const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
                       />
                       End Date
                     </Typography>
-                    <Typography variant="body1">{sheet.endDate}</Typography>
+                    <Typography variant="body1">
+                      {formatDate(sheet.endDate)}
+                    </Typography>
                   </Box>
                 </Grid>
               </Grid>
@@ -289,7 +303,11 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
   const [remark, setRemark] = useState("");
   const [remarkError, setRemarkError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -300,6 +318,11 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
       setTimesheets(data);
     } catch (err) {
       console.error("Failed to fetch timesheets");
+      setSnackbar({
+        open: true,
+        message: "Failed to fetch timesheets",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -313,10 +336,18 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
     try {
       await approveTimesheetById(id);
       refreshData();
-      setSnackbar({ open: true, message: 'Timesheet approved successfully!', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: "Timesheet approved successfully!",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error approving timesheet:", error);
-      setSnackbar({ open: true, message: 'Failed to approve timesheet.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Failed to approve timesheet.",
+        severity: "error",
+      });
     }
   };
 
@@ -332,15 +363,23 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
       setRemarkError(false);
       setRemarkDialogOpen(false);
       refreshData();
-      setSnackbar({ open: true, message: 'Timesheet rejected successfully!', severity: 'warning' });
+      setSnackbar({
+        open: true,
+        message: "Timesheet rejected successfully!",
+        severity: "warning",
+      });
     } catch (error) {
       console.error("Rejection error:", error);
-      setSnackbar({ open: true, message: 'Failed to reject timesheet.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Failed to reject timesheet.",
+        severity: "error",
+      });
     }
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setSnackbar({ ...snackbar, open: false });
@@ -568,9 +607,14 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }} variant="filled">
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -579,6 +623,8 @@ const PendingTimesheetDialog = ({ open, onClose }) => {
 };
 
 export default PendingTimesheetDialog;
+
+//----------------------------------------------------------------------------------------------------------------
 
 // import React, { useEffect, useState } from "react";
 // import {

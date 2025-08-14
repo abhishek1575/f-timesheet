@@ -27,6 +27,8 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
   const [editingTimesheet, setEditingTimesheet] = useState(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [showNoTimesheetSnackbar, setShowNoTimesheetSnackbar] = useState(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const timerRef = useRef(null);
 
   const fetchRejectedTimesheets = async () => {
@@ -63,14 +65,18 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
     try {
       await resubmitTimesheet(id);
       await submitTimesheet(id);
-      alert("Timesheet Resubmitted Successfully!");
+      setSnackbarMessage("Timesheet Resubmitted Successfully!");
+      setShowSuccessSnackbar(true);
       fetchRejectedTimesheets();
     } catch (error) {
       console.error(
         "Resubmission Failed:",
         error.response?.data || error.message
       );
-      alert(error.response?.data?.message || "Failed to resubmit timesheet.");
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to resubmit timesheet."
+      );
+      setShowSuccessSnackbar(true);
     }
   };
 
@@ -90,12 +96,14 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
       };
 
       await updateTimesheet(editingTimesheet.id, allowedFields);
-      alert("Timesheet updated successfully!");
+      setSnackbarMessage("Timesheet updated successfully!");
+      setShowSuccessSnackbar(true);
       setUpdateDialogOpen(false);
       fetchRejectedTimesheets();
     } catch (error) {
       console.error("Update Error", error);
-      alert("Failed to update timesheet.");
+      setSnackbarMessage("Failed to update timesheet.");
+      setShowSuccessSnackbar(true);
     }
   };
 
@@ -166,34 +174,16 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
                       {ts.comments}
                     </TableCell>
                     <TableCell>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "8px",
-                        }}
+                      <Button
+                        variant="contained"
+                        color="info"
+                        size="small"
+                        fullWidth
+                        onClick={() => handleEdit(ts)}
+                        sx={{ textTransform: "none" }}
                       >
-                        <Button
-                          variant="outlined"
-                          color="info"
-                          size="small"
-                          fullWidth
-                          onClick={() => handleEdit(ts)}
-                          sx={{ textTransform: "none" }}
-                        >
-                          Update
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          size="small"
-                          fullWidth
-                          onClick={() => handleResubmit(ts.id)}
-                          sx={{ textTransform: "none" }}
-                        >
-                          Submit
-                        </Button>
-                      </div>
+                        Update
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -233,6 +223,7 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
           })
         }
         onSubmit={handleDialogSubmit}
+        onResubmit={handleResubmit}
       />
 
       <Snackbar
@@ -245,13 +236,30 @@ const RejectedTimesheetDialog = ({ open, onClose }) => {
           No rejected timesheets found.
         </Alert>
       </Snackbar>
+
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={5000}
+        onClose={() => setShowSuccessSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setShowSuccessSnackbar(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
 
 export default RejectedTimesheetDialog;
 
-// import React, { useEffect, useState } from "react";
+//------------------------------------------------------------------------------------------------------------
+
+// import React, { useEffect, useState, useRef } from "react";
 // import {
 //   Dialog,
 //   DialogTitle,
@@ -263,6 +271,8 @@ export default RejectedTimesheetDialog;
 //   TableRow,
 //   TableCell,
 //   TableBody,
+//   Snackbar,
+//   Alert,
 // } from "@mui/material";
 // import axios from "axios";
 // import config from "../../service/config";
@@ -272,12 +282,13 @@ export default RejectedTimesheetDialog;
 //   resubmitTimesheet,
 // } from "../../service/timesheetService";
 // import UpdateTimesheetDialog from "../employee/UpdateTimesheetDialog.jsx";
-// // Update this import path as per your project
 
 // const RejectedTimesheetDialog = ({ open, onClose }) => {
 //   const [rejectedTimesheets, setRejectedTimesheets] = useState([]);
 //   const [editingTimesheet, setEditingTimesheet] = useState(null);
 //   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+//   const [showNoTimesheetSnackbar, setShowNoTimesheetSnackbar] = useState(false);
+//   const timerRef = useRef(null);
 
 //   const fetchRejectedTimesheets = async () => {
 //     const token = sessionStorage.getItem("token");
@@ -285,8 +296,16 @@ export default RejectedTimesheetDialog;
 //       const response = await axios.get(`${config.BASE_URL}sheets/rejected`, {
 //         headers: { Authorization: `Bearer ${token}` },
 //       });
-//       setRejectedTimesheets(response.data);
+//       const data = response.data;
+//       setRejectedTimesheets(data);
 
+//       if (data.length === 0) {
+//         setShowNoTimesheetSnackbar(true);
+//         timerRef.current = setTimeout(() => {
+//           setShowNoTimesheetSnackbar(false);
+//           onClose();
+//         }, 5000);
+//       }
 //     } catch (error) {
 //       console.error("Error fetching rejected timesheets", error);
 //     }
@@ -296,6 +315,9 @@ export default RejectedTimesheetDialog;
 //     if (open) {
 //       fetchRejectedTimesheets();
 //     }
+//     return () => {
+//       if (timerRef.current) clearTimeout(timerRef.current);
+//     };
 //   }, [open]);
 
 //   const handleResubmit = async (id) => {
@@ -314,31 +336,21 @@ export default RejectedTimesheetDialog;
 //   };
 
 //   const handleEdit = (timesheet) => {
-//     console.log("Editing timesheet:", timesheet);
 //     setEditingTimesheet(timesheet);
 //     setUpdateDialogOpen(true);
-//   };
-
-//   const handleDialogChange = (e) => {
-//     setEditingTimesheet({
-//       ...editingTimesheet,
-//       [e.target.name]: e.target.value,
-//     });
 //   };
 
 //   const handleDialogSubmit = async () => {
 //     try {
 //       const allowedFields = {
 //         taskName: editingTimesheet.taskName,
-//         projectName: editingTimesheet.projectName, // Changed from 'project' to 'projectName'
+//         projectName: editingTimesheet.projectName,
 //         startDate: editingTimesheet.startDate,
 //         endDate: editingTimesheet.endDate,
 //         effort: editingTimesheet.effort,
 //       };
 
 //       await updateTimesheet(editingTimesheet.id, allowedFields);
-//       console.log("Sending timesheet update payload:", allowedFields);
-
 //       alert("Timesheet updated successfully!");
 //       setUpdateDialogOpen(false);
 //       fetchRejectedTimesheets();
@@ -350,7 +362,12 @@ export default RejectedTimesheetDialog;
 
 //   return (
 //     <>
-//       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+//       <Dialog
+//         open={open}
+//         onClose={onClose}
+//         fullWidth={rejectedTimesheets.length > 0}
+//         maxWidth={rejectedTimesheets.length > 0 ? "md" : "xs"}
+//       >
 //         <DialogTitle sx={{ backgroundColor: "#212121", color: "#E0E0E0" }}>
 //           Rejected Timesheets
 //         </DialogTitle>
@@ -458,10 +475,7 @@ export default RejectedTimesheetDialog;
 //               px: 3,
 //               py: 1,
 //               borderRadius: 2,
-//               "&:hover": {
-//                 backgroundColor: "#424242",
-//                 borderColor: "#ffffff",
-//               },
+//               "&:hover": { backgroundColor: "#424242", borderColor: "#ffffff" },
 //             }}
 //           >
 //             Close
@@ -469,7 +483,6 @@ export default RejectedTimesheetDialog;
 //         </DialogActions>
 //       </Dialog>
 
-//       {/* Update Timesheet Dialog */}
 //       <UpdateTimesheetDialog
 //         open={updateDialogOpen}
 //         onClose={() => setUpdateDialogOpen(false)}
@@ -482,6 +495,17 @@ export default RejectedTimesheetDialog;
 //         }
 //         onSubmit={handleDialogSubmit}
 //       />
+
+//       <Snackbar
+//         open={showNoTimesheetSnackbar}
+//         anchorOrigin={{ vertical: "top", horizontal: "center" }}
+//         onClose={() => setShowNoTimesheetSnackbar(false)}
+//         autoHideDuration={5000}
+//       >
+//         <Alert severity="info" sx={{ width: "100%" }}>
+//           No rejected timesheets found.
+//         </Alert>
+//       </Snackbar>
 //     </>
 //   );
 // };
