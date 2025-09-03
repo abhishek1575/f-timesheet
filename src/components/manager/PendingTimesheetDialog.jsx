@@ -6,18 +6,14 @@ import {
   DialogActions,
   Button,
   TextField,
-  Paper,
   Box,
   Typography,
   Grid,
   Card,
-  CardContent,
-  CardActions,
   Divider,
   Chip,
   Avatar,
   IconButton,
-  Tooltip,
   useTheme,
   useMediaQuery,
   CircularProgress,
@@ -26,7 +22,6 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
-  ListItemButton,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -49,7 +44,7 @@ import {
   CalendarToday,
   AccessTime,
 } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
+
 
 const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
   const [expanded, setExpanded] = useState(false);

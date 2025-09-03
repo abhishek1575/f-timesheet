@@ -11,7 +11,7 @@ export const changePassword = async (oldPassword, newPassword) => {
     if (!token || !id) {
       throw new Error("Token or User ID is missing");
     }
-    console.log("Old password:", oldPassword + " new password:", newPassword + " id:", id + " token:", token);
+//console.log("Old password:", oldPassword + " new password:", newPassword + " id:", id + " token:", token);
     const response = await axios.post(
       `${Config.BASE_URL}auth/changePassword`,
       {

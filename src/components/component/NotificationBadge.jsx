@@ -1,4 +1,4 @@
-import React from "react";
+
 import { IconButton, Badge, Tooltip } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
@@ -48,20 +48,3 @@ const NotificationBadge = ({
 
 export default NotificationBadge;
 
-// import React from "react";
-// import { IconButton, Badge, Tooltip } from "@mui/material";
-// import NotificationsIcon from "@mui/icons-material/Notifications";
-
-// const NotificationBadge = ({ count = 0, onClick, title = "Notifications" }) => {
-//   return (
-//     <Tooltip title={title}>
-//       <IconButton onClick={onClick} color="inherit">
-//         <Badge color="error" variant={count > 0 ? 'dot' : 'standard'}>
-//           <NotificationsIcon />
-//         </Badge>
-//       </IconButton>
-//     </Tooltip>
-//   );
-// };
-
-// export default NotificationBadge;

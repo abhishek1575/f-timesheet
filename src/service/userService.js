@@ -4,7 +4,7 @@ import axios from "axios";
 
 
 export const fetchUserById = async (userId, token) => {
-  console.log("Fetching user details for ID:", userId);
+  //console.log("Fetching user details for ID:", userId);
   const response = await fetch(`${config.BASE_URL}users/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,

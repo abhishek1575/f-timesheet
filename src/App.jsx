@@ -8,11 +8,11 @@ import ForgotPassword from "./components/login/ForgotPassword";
 import RegisterForm from "./components/login/RegisterForm";
 import TeamMemberTable from "./components/manager/TeamMemberTable";
 import PendingTimesheetDialog from "./components/manager/PendingTimesheetDialog";
-import ADashboard from "./components/Admin/ADashboard";
+import ANavbar2 from "./components/Admin/ANavbar2";
 
 import ProtectedRoute from "../src/components/utils/ProtectedRoute";
 import { Navigate, Route, Routes } from "react-router-dom";
-import SDashboard from './components/super_admin/SDashboard';
+import SDashboard from './components/super_admin/sdashboard';
 
 function App() {
   return (
@@ -43,7 +43,7 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/adashboard" element={<ADashboard />} />
+          <Route path="/adashboard" element={<ANavbar2 />} />
           <Route
             path="/managers"
             element={<TeamMemberTable mode="ADMIN" filterRole="MANAGER" />}

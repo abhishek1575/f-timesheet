@@ -8,7 +8,7 @@ export const getAllTimesheets = async () => {
       throw new Error("No token found in session storage");
     }
 
-    console.log("Fetching timesheets for current user...");
+   // console.log("Fetching timesheets for current user...");
 
     const response = await fetch(`${config.BASE_URL}sheets/my`, {
       method: "GET",
@@ -107,7 +107,7 @@ export const getTimesheetById = async (timesheetId) => {
 // Update timesheet
 export const updateTimesheet = async (timesheetId, timesheetData) => {
   const token = sessionStorage.getItem("token") || localStorage.getItem("token");
-  console.log("Updating timesheet with ID:", timesheetId + " and data:", timesheetData);
+  //console.log("Updating timesheet with ID:", timesheetId + " and data:", timesheetData);
    
   try {
     const response = await axios.put(

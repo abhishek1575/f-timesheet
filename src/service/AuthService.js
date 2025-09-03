@@ -37,12 +37,6 @@ class AuthService {
         sessionStorage.removeItem("ManagerId"); // cleanup for admins
       }
 
-      // Optional: Debug logging
-      console.log("UserId:", sessionStorage.getItem("UserId"));
-      console.log("Email:", sessionStorage.getItem("Email"));
-      console.log("Name:", sessionStorage.getItem("Name"));
-      console.log("Role:", sessionStorage.getItem("Role"));
-      console.log("ManagerId:", sessionStorage.getItem("ManagerId"));
 
     }
     return response;
