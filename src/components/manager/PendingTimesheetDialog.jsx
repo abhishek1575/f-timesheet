@@ -160,7 +160,7 @@ const TimesheetListItem = ({ sheet, onApprove, onReject }) => {
                       <WorkOutline
                         sx={{ fontSize: 16, mr: 0.5, verticalAlign: "middle" }}
                       />
-                      Project Name
+                      Task Category
                     </Typography>
                     <Typography variant="body1">{sheet.projectName}</Typography>
                   </Box>

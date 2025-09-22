@@ -18,6 +18,11 @@ import {
   DialogActions,
   TextField,
   Stack,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  FormHelperText,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
@@ -43,17 +48,42 @@ const UpdateTimesheetForm = ({
   open,
   onClose,
   timesheet,
-  onChange,
   onSubmit,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [dateError, setDateError] = useState({ startDate: "", endDate: "" });
-  const [localTimesheet, setLocalTimesheet] = useState(timesheet || {});
+  const [localTimesheet, setLocalTimesheet] = useState({
+    taskName: "",
+    projectName: "",
+    startDate: "",
+    endDate: "",
+    effort: "",
+    comments: "",
+    otherActivity: "",
+  });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (timesheet) {
-      setLocalTimesheet(timesheet);
+      // Check if the projectName is one of the predefined options
+      const predefinedOptions = [
+        "Development",
+        "Testing",
+        "Design",
+        "Debugging",
+        "Support",
+        "Coordination",
+        "Outdoor activities",
+      ];
+
+      const isPredefined = predefinedOptions.includes(timesheet.projectName);
+
+      setLocalTimesheet({
+        ...timesheet,
+        projectName: isPredefined ? timesheet.projectName : "Other",
+        otherActivity: isPredefined ? "" : timesheet.projectName,
+      });
     }
   }, [timesheet]);
 
@@ -80,13 +110,30 @@ const UpdateTimesheetForm = ({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLocalTimesheet((prev) => ({ ...prev, [name]: value }));
-    if (onChange) onChange(e);
+
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!localTimesheet.projectName)
+      newErrors.projectName = "This field is compulsory";
+    else if (
+      localTimesheet.projectName === "Other" &&
+      !localTimesheet.otherActivity.trim()
+    )
+      newErrors.otherActivity = "Please specify your activity";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
-    if (!dateError.startDate && !dateError.endDate) {
-      onSubmit();
-      onClose();
+    if (!dateError.startDate && !dateError.endDate && validate()) {
+      onSubmit(localTimesheet);
     }
   };
 
@@ -139,23 +186,43 @@ const UpdateTimesheetForm = ({
               }}
             />
 
-            <TextField
-              label="Project Name"
-              name="projectName"
-              value={localTimesheet.projectName || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="outlined"
-              size="small"
-              InputLabelProps={{
-                style: { color: theme.palette.text.secondary },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 1,
-                },
-              }}
-            />
+            <FormControl fullWidth size="small" error={!!errors.projectName}>
+              <InputLabel id="project-name-label">Task Category</InputLabel>
+              <Select
+                labelId="project-name-label"
+                label="Project Name"
+                name="projectName"
+                value={localTimesheet.projectName || ""}
+                onChange={handleChange}
+              >
+                <MenuItem value="Development">Development</MenuItem>
+                <MenuItem value="Testing">Testing</MenuItem>
+                <MenuItem value="Design">Design</MenuItem>
+                <MenuItem value="Debugging">Debugging</MenuItem>
+                <MenuItem value="Support">Support</MenuItem>
+                <MenuItem value="Coordination">Coordination</MenuItem>
+                <MenuItem value="Outdoor activities">
+                  Outdoor activities
+                </MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+              {errors.projectName && (
+                <FormHelperText>{errors.projectName}</FormHelperText>
+              )}
+            </FormControl>
+
+            {localTimesheet.projectName === "Other" && (
+              <TextField
+                label="Specify your Activity"
+                name="otherActivity"
+                value={localTimesheet.otherActivity || ""}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                error={!!errors.otherActivity}
+                helperText={errors.otherActivity}
+              />
+            )}
 
             <DatePicker
               label="Start Date"
@@ -346,7 +413,7 @@ const DraftCard = ({ sheet, onEdit, onSubmit }) => {
 
         <Grid container spacing={1}>
           <Grid item xs={6}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box sx={{ display: "极", alignItems: "center" }}>
               <CalendarTodayIcon color="action" sx={{ mr: 0.5 }} />
               <Box>
                 <Typography variant="caption" color="text.secondary">
@@ -476,25 +543,10 @@ export default function DraftTimesheetTable() {
     setSnackbarOpen(true);
   };
 
-  // Check if today is Monday (1) or Tuesday (2)
-  const isMondayOrTuesday = () => {
-    const today = new Date().getDay();
-    return today === 1 || today === 2;
-  };
-
   const validateTimesheetDates = (timesheet) => {
     const today = new Date().toISOString().split("T")[0];
     const startDate = timesheet.startDate;
     const endDate = timesheet.endDate;
-
-    // Check if today is Monday or Tuesday
-    if (!isMondayOrTuesday()) {
-      showSnackbar(
-        "Timesheets can only be submitted on Monday or Tuesday",
-        "error"
-      );
-      return false;
-    }
 
     // Check if start date is in the past
     if (startDate < today) {
@@ -538,28 +590,39 @@ export default function DraftTimesheetTable() {
   const handleEdit = async (id) => {
     try {
       const response = await getTimesheetById(id);
-      setEditingTimesheet(response.data);
+      // Ensure the editingTimesheet includes otherActivity field
+      setEditingTimesheet({
+        ...response.data,
+        otherActivity: response.data.otherActivity || "",
+      });
       setDialogOpen(true);
     } catch (error) {
       console.error("Error loading timesheet", error);
     }
   };
 
-  const handleDialogChange = (e) => {
-    setEditingTimesheet({
-      ...editingTimesheet,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleDialogSubmit = async () => {
+  const handleDialogSubmit = async (localTimesheet) => {
     try {
+      // If "Other" is selected, use the custom activity text as projectName
+      const projectName =
+        localTimesheet.projectName === "Other"
+          ? localTimesheet.otherActivity
+          : localTimesheet.projectName;
+
+      const updatedTimesheet = {
+        ...localTimesheet,
+        projectName,
+      };
+
+      // Remove otherActivity from payload as it's not needed in the backend
+      delete updatedTimesheet.otherActivity;
+
       // Validate the updated timesheet
-      if (!validateTimesheetDates(editingTimesheet)) {
+      if (!validateTimesheetDates(updatedTimesheet)) {
         return;
       }
 
-      await updateTimesheet(editingTimesheet.id, editingTimesheet);
+      await updateTimesheet(updatedTimesheet.id, updatedTimesheet);
       showSnackbar("Timesheet updated successfully!");
       setDialogOpen(false);
       setEditingTimesheet(null);
@@ -613,7 +676,6 @@ export default function DraftTimesheetTable() {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         timesheet={editingTimesheet}
-        onChange={handleDialogChange}
         onSubmit={handleDialogSubmit}
       />
 
@@ -694,435 +756,3 @@ export default function DraftTimesheetTable() {
     </Box>
   );
 }
-
-//old code with no condition of submit only on Monday and Tuesday
-
-// import React, { useEffect, useState } from "react";
-// import {
-//   Button,
-//   Box,
-//   IconButton,
-//   Typography,
-//   Grid,
-//   Card,
-//   CardContent,
-//   CardActions,
-//   useTheme,
-//   useMediaQuery,
-//   Snackbar,
-//   Alert,
-// } from "@mui/material";
-// import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-// import EditIcon from "@mui/icons-material/Edit";
-// import SendIcon from "@mui/icons-material/Send";
-// import AccessTimeIcon from "@mui/icons-material/AccessTime";
-// import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-// import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
-// import DescriptionIcon from "@mui/icons-material/Description";
-
-// import {
-//   getDraftTimesheets,
-//   submitTimesheet,
-//   updateTimesheet,
-//   getTimesheetById,
-// } from "../../service/timesheetService";
-// import UpdateTimesheetForm from "./UpdateTimesheet";
-// import { useNavigate } from "react-router-dom";
-// import Tooltip from "@mui/material/Tooltip";
-
-// const DraftCard = ({ sheet, onEdit, onSubmit }) => {
-//   const theme = useTheme();
-
-//   return (
-//     <Card
-//       sx={{
-//         width: "100%",
-//         maxWidth: "300px", // Set a fixed maximum width
-//         minWidth: "250px", // Set a minimum width
-//         height: "100%",
-//         display: "flex",
-//         flexDirection: "column",
-//         borderRadius: "12px",
-//         boxShadow: theme.shadows[1],
-//         transition: "all 0.2s ease",
-//         "&:hover": {
-//           boxShadow: theme.shadows[4],
-//           transform: "translateY(-2px)",
-//         },
-//         borderLeft: `3px solid ${theme.palette.primary.main}`,
-//         overflow: "hidden", // Prevent content from overflowing
-//       }}
-//     >
-//       <CardContent sx={{ flex: 1, p: 2 }}>
-//         {/* Project Name */}
-//         <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-//           <WorkOutlineIcon color="primary" sx={{ mr: 1, flexShrink: 0 }} />
-//           <Typography
-//             variant="subtitle1"
-//             sx={{
-//               fontWeight: 600,
-//               color: theme.palette.primary.dark,
-//               whiteSpace: "nowrap",
-//               overflow: "hidden",
-//               textOverflow: "ellipsis",
-//             }}
-//           >
-//             {sheet.project}
-//           </Typography>
-//         </Box>
-
-//         {/* Task Description */}
-//         <Box
-//           sx={{
-//             bgcolor: theme.palette.grey[50],
-//             borderRadius: "8px",
-//             p: 1.5,
-//             mb: 1.5,
-//             minHeight: "60px",
-//           }}
-//         >
-//           <Tooltip title={sheet.taskName} arrow>
-//             <Typography
-//               variant="body2"
-//               sx={{
-//                 display: "-webkit-box",
-//                 WebkitLineClamp: 2,
-//                 WebkitBoxOrient: "vertical",
-//                 overflow: "hidden",
-//                 textOverflow: "ellipsis",
-//                 lineHeight: 1.3,
-//               }}
-//             >
-//               {sheet.taskName}
-//             </Typography>
-//           </Tooltip>
-//         </Box>
-
-//         {/* Dates and Effort */}
-//         <Grid container spacing={1}>
-//           <Grid item xs={6}>
-//             <Box sx={{ display: "flex", alignItems: "center" }}>
-//               <CalendarTodayIcon color="action" sx={{ mr: 0.5 }} />
-//               <Box>
-//                 <Typography variant="caption" color="text.secondary">
-//                   Start
-//                 </Typography>
-//                 <Typography
-//                   variant="body2"
-//                   sx={{
-//                     fontWeight: 500,
-//                     whiteSpace: "nowrap",
-//                     overflow: "hidden",
-//                     textOverflow: "ellipsis",
-//                   }}
-//                 >
-//                   {sheet.startDate}
-//                 </Typography>
-//               </Box>
-//             </Box>
-//           </Grid>
-//           <Grid item xs={6}>
-//             <Box sx={{ display: "flex", alignItems: "center" }}>
-//               <CalendarTodayIcon color="action" sx={{ mr: 0.5 }} />
-//               <Box>
-//                 <Typography variant="caption" color="text.secondary">
-//                   End
-//                 </Typography>
-//                 <Typography
-//                   variant="body2"
-//                   sx={{
-//                     fontWeight: 500,
-//                     whiteSpace: "nowrap",
-//                     overflow: "hidden",
-//                     textOverflow: "ellipsis",
-//                   }}
-//                 >
-//                   {sheet.endDate}
-//                 </Typography>
-//               </Box>
-//             </Box>
-//           </Grid>
-//           <Grid item xs={12} sx={{ mt: 0.5 }}>
-//             <Box sx={{ display: "flex", alignItems: "center" }}>
-//               <AccessTimeIcon color="action" sx={{ mr: 0.5 }} />
-//               <Typography variant="body2" sx={{ fontWeight: 500 }}>
-//                 {sheet.effort} hours
-//               </Typography>
-//             </Box>
-//           </Grid>
-//         </Grid>
-//       </CardContent>
-
-//       {/* Action Buttons */}
-//       <CardActions sx={{ p: 1.5, pt: 0 }}>
-//         <Button
-//           size="small"
-//           variant="outlined"
-//           startIcon={<EditIcon />}
-//           onClick={() => onEdit(sheet.id)}
-//           sx={{
-//             borderRadius: "6px",
-//             minWidth: 0,
-//             whiteSpace: "nowrap",
-//           }}
-//         >
-//           Edit
-//         </Button>
-//         <Button
-//           size="small"
-//           variant="contained"
-//           color="primary"
-//           startIcon={<SendIcon />}
-//           onClick={() => onSubmit(sheet.id)}
-//           sx={{
-//             borderRadius: "6px",
-//             minWidth: 0,
-//             whiteSpace: "nowrap",
-//           }}
-//         >
-//           Submit
-//         </Button>
-//       </CardActions>
-//     </Card>
-//   );
-// };
-
-// export default function DraftTimesheetTable() {
-//   const [timesheets, setTimesheets] = useState([]);
-//   const [editingTimesheet, setEditingTimesheet] = useState(null);
-//   const [dialogOpen, setDialogOpen] = useState(false);
-//   const theme = useTheme();
-//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-//   const [snackbarOpen, setSnackbarOpen] = useState(false);
-//   const [snackbarMessage, setSnackbarMessage] = useState("");
-//   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     loadDraftTimesheets();
-//   }, []);
-
-//   const handleBack = () => {
-//     const role = sessionStorage.getItem("Role");
-//     if (role === "MANAGER") {
-//       navigate("/mdashboard");
-//     } else if (role === "EMPLOYEE") {
-//       navigate("/edashboard");
-//     } else if (role === "ADMIN") {
-//       navigate("/adashboard");
-//     } else {
-//       navigate("/Login");
-//     }
-//   };
-
-//   const loadDraftTimesheets = async () => {
-//     try {
-//       const response = await getDraftTimesheets();
-//       setTimesheets(response.data);
-//     } catch (error) {
-//       console.error("Error fetching draft timesheets", error);
-//     }
-//   };
-
-//   const showSnackbar = (message, severity = "success") => {
-//     setSnackbarMessage(message);
-//     setSnackbarSeverity(severity);
-//     setSnackbarOpen(true);
-//   };
-
-//   const validateTimesheetDates = (timesheet) => {
-//     const today = new Date().toISOString().split("T")[0];
-//     const startDate = timesheet.startDate;
-//     const endDate = timesheet.endDate;
-
-//     if (startDate < today) {
-//       showSnackbar("Start date cannot be in the past", "error");
-//       return false;
-//     }
-
-//     if (endDate < today) {
-//       showSnackbar("End date cannot be in the past", "error");
-//       return false;
-//     }
-
-//     if (endDate < startDate) {
-//       showSnackbar("End date cannot be before start date", "error");
-//       return false;
-//     }
-
-//     return true;
-//   };
-
-//   const handleSubmit = async (id) => {
-//     try {
-//       const response = await getTimesheetById(id);
-//       const timesheet = response.data;
-
-//       if (!validateTimesheetDates(timesheet)) {
-//         return;
-//       }
-
-//       await submitTimesheet(id);
-//       showSnackbar("Timesheet submitted successfully!");
-//       loadDraftTimesheets();
-//     } catch (error) {
-//       console.error("Submit Error", error);
-//       showSnackbar("Failed to submit timesheet", "error");
-//     }
-//   };
-
-//   const handleEdit = async (id) => {
-//     try {
-//       const response = await getTimesheetById(id);
-//       setEditingTimesheet(response.data);
-//       setDialogOpen(true);
-//     } catch (error) {
-//       console.error("Error loading timesheet", error);
-//     }
-//   };
-
-//   const handleDialogChange = (e) => {
-//     setEditingTimesheet({
-//       ...editingTimesheet,
-//       [e.target.name]: e.target.value,
-//     });
-//   };
-
-//   const handleDialogSubmit = async () => {
-//     try {
-//       await updateTimesheet(editingTimesheet.id, editingTimesheet);
-//       showSnackbar("Timesheet updated successfully!");
-//       setDialogOpen(false);
-//       setEditingTimesheet(null);
-//       loadDraftTimesheets();
-//     } catch (error) {
-//       console.error("Update Error", error);
-//       showSnackbar("Failed to update timesheet", "error");
-//     }
-//   };
-
-//   return (
-//     <Box
-//       sx={{
-//         minHeight: "100vh",
-//         background: theme.palette.grey[100],
-//         p: { xs: 1, sm: 3 },
-//       }}
-//     >
-//       <Box
-//         sx={{
-//           display: "flex",
-//           alignItems: "center",
-//           mb: 3,
-//           maxWidth: "1600px",
-//           mx: "auto",
-//         }}
-//       >
-//         <IconButton
-//           onClick={handleBack}
-//           sx={{
-//             backgroundColor: "white",
-//             boxShadow: 1,
-//             "&:hover": { backgroundColor: theme.palette.grey[200] },
-//             mr: 2,
-//           }}
-//         >
-//           <ArrowBackIcon />
-//         </IconButton>
-//         <Typography
-//           variant={isMobile ? "h6" : "h5"}
-//           sx={{
-//             fontWeight: 600,
-//             color: theme.palette.primary.dark,
-//           }}
-//         >
-//           Draft Timesheets
-//         </Typography>
-//       </Box>
-
-//       <UpdateTimesheetForm
-//         open={dialogOpen}
-//         onClose={() => setDialogOpen(false)}
-//         timesheet={editingTimesheet}
-//         onChange={handleDialogChange}
-//         onSubmit={handleDialogSubmit}
-//       />
-
-//       {timesheets.length > 0 ? (
-//         <Grid
-//           container
-//           spacing={2}
-//           sx={{
-//             maxWidth: "1600px",
-//             mx: "auto",
-//           }}
-//         >
-//           {timesheets.map((sheet) => (
-//             <Grid
-//               item
-//               xs={12}
-//               sm={6}
-//               md={4}
-//               lg={3}
-//               key={sheet.id}
-//               sx={{
-//                 display: "flex",
-//               }}
-//             >
-//               <DraftCard
-//                 sheet={sheet}
-//                 onEdit={handleEdit}
-//                 onSubmit={handleSubmit}
-//               />
-//             </Grid>
-//           ))}
-//         </Grid>
-//       ) : (
-//         <Box
-//           sx={{
-//             display: "flex",
-//             justifyContent: "center",
-//             alignItems: "center",
-//             height: "40vh",
-//             maxWidth: "1600px",
-//             mx: "auto",
-//             backgroundColor: "white",
-//             borderRadius: "12px",
-//             boxShadow: theme.shadows[1],
-//           }}
-//         >
-//           <Typography
-//             variant="body1"
-//             color="text.secondary"
-//             sx={{
-//               display: "flex",
-//               alignItems: "center",
-//               gap: 1,
-//             }}
-//           >
-//             <DescriptionIcon color="action" />
-//             No Draft Timesheets Found
-//           </Typography>
-//         </Box>
-//       )}
-
-//       <Snackbar
-//         open={snackbarOpen}
-//         autoHideDuration={4000}
-//         onClose={() => setSnackbarOpen(false)}
-//         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-//       >
-//         <Alert
-//           severity={snackbarSeverity}
-//           onClose={() => setSnackbarOpen(false)}
-//           sx={{ width: "100%" }}
-//           elevation={6}
-//           variant="filled"
-//         >
-//           {snackbarMessage}
-//         </Alert>
-//       </Snackbar>
-//     </Box>
-//   );
-// }

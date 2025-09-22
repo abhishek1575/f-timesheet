@@ -10,11 +10,6 @@ import {
   Stack,
   useMediaQuery,
   useTheme,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  FormHelperText,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -30,19 +25,11 @@ const UpdateTimesheetDialog = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [dateError, setDateError] = useState({ startDate: "", endDate: "" });
-  const [localTimesheet, setLocalTimesheet] = useState({
-    taskName: "",
-    projectName: "",
-    startDate: "",
-    endDate: "",
-    effort: "",
-    comments: "",
-  });
-  const [errors, setErrors] = useState({});
+  const [localTimesheet, setLocalTimesheet] = useState(timesheet || {});
 
   useEffect(() => {
     if (timesheet) {
-      setLocalTimesheet({ ...timesheet });
+      setLocalTimesheet(timesheet);
     }
   }, [timesheet]);
 
@@ -61,62 +48,32 @@ const UpdateTimesheetDialog = ({
 
     setDateError((prev) => ({ ...prev, [name]: error }));
 
-    if (date) {
-      const formattedDate = date.toISOString().split("T")[0];
-      handleChange({ target: { name, value: formattedDate } });
-    }
+    // Format date to YYYY-MM-DD for the input
+    const formattedDate = date.toISOString().split("T")[0];
+    handleChange({ target: { name, value: formattedDate } });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updatedTimesheet = { ...localTimesheet, [name]: value };
-    setLocalTimesheet(updatedTimesheet);
-
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: null });
-    }
-
+    setLocalTimesheet((prev) => ({ ...prev, [name]: value }));
     if (onChange) onChange(e);
   };
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!localTimesheet.projectName.trim()) {
-      newErrors.projectName = "Project name is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = () => {
-    if (!dateError.startDate && !dateError.endDate && validate()) {
+    if (!dateError.startDate && !dateError.endDate) {
       onSubmit();
-      onClose(); // close after submit
+      onClose(); // Close dialog after submission
     }
   };
 
   const handleDialogResubmit = () => {
-    if (!dateError.startDate && !dateError.endDate && validate()) {
+    if (!dateError.startDate && !dateError.endDate) {
       onResubmit(localTimesheet.id);
-      onClose(); // close after resubmit
+      onClose(); // Close dialog after resubmission
     }
   };
 
-
   if (!localTimesheet) return null;
-
-  // Check if "Other" is currently selected
-  const isOther = ![
-    "Development",
-    "Testing",
-    "Design",
-    "Debugging",
-    "Support",
-    "Coordination",
-    "Outdoor activities",
-  ].includes(localTimesheet.projectName);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -155,51 +112,33 @@ const UpdateTimesheetDialog = ({
               fullWidth
               variant="outlined"
               size="small"
+              InputLabelProps={{
+                style: { color: theme.palette.text.secondary },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1,
+                },
+              }}
             />
 
-            <FormControl fullWidth size="small" error={!!errors.projectName}>
-              <InputLabel id="project-name-label">Task Category</InputLabel>
-              <Select
-                labelId="project-name-label"
-                label="Project Name"
-                name="projectName"
-                value={isOther ? "Other" : localTimesheet.projectName || ""}
-                onChange={(e) => {
-                  if (e.target.value === "Other") {
-                    setLocalTimesheet({ ...localTimesheet, projectName: "" });
-                  } else {
-                    handleChange(e);
-                  }
-                }}
-              >
-                <MenuItem value="Development">Development</MenuItem>
-                <MenuItem value="Testing">Testing</MenuItem>
-                <MenuItem value="Design">Design</MenuItem>
-                <MenuItem value="Debugging">Debugging</MenuItem>
-                <MenuItem value="Support">Support</MenuItem>
-                <MenuItem value="Coordination">Coordination</MenuItem>
-                <MenuItem value="Outdoor activities">
-                  Outdoor activities
-                </MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
-              </Select>
-              {errors.projectName && (
-                <FormHelperText>{errors.projectName}</FormHelperText>
-              )}
-            </FormControl>
-
-            {isOther && (
-              <TextField
-                label="Specify your Activity"
-                name="projectName"
-                value={localTimesheet.projectName || ""}
-                onChange={handleChange}
-                fullWidth
-                size="small"
-                error={!!errors.projectName}
-                helperText={errors.projectName}
-              />
-            )}
+            <TextField
+              label="Project Name"
+              name="projectName"
+              value={localTimesheet.projectName || ""}
+              onChange={handleChange}
+              fullWidth
+              variant="outlined"
+              size="small"
+              InputLabelProps={{
+                style: { color: theme.palette.text.secondary },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1,
+                },
+              }}
+            />
 
             <DatePicker
               label="Start Date"
@@ -217,6 +156,11 @@ const UpdateTimesheetDialog = ({
                   fullWidth
                   error={!!dateError.startDate}
                   helperText={dateError.startDate}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                    },
+                  }}
                 />
               )}
             />
@@ -239,6 +183,11 @@ const UpdateTimesheetDialog = ({
                   fullWidth
                   error={!!dateError.endDate}
                   helperText={dateError.endDate}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1,
+                    },
+                  }}
                 />
               )}
             />
@@ -253,12 +202,35 @@ const UpdateTimesheetDialog = ({
               fullWidth
               variant="outlined"
               size="small"
+              InputLabelProps={{
+                style: { color: theme.palette.text.secondary },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 1,
+                },
+              }}
             />
           </Stack>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, py: 2, justifyContent: "space-between" }}>
-          <Button onClick={onClose} variant="outlined">
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              textTransform: "none",
+              px: 3,
+              borderRadius: 1,
+              color: theme.palette.text.primary,
+              borderColor: theme.palette.divider,
+              "&:hover": {
+                borderColor: theme.palette.primary.main,
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
             Cancel
           </Button>
 
@@ -266,11 +238,20 @@ const UpdateTimesheetDialog = ({
             <Button
               onClick={handleSubmit}
               variant="contained"
-              disabled={
-                !!dateError.startDate ||
-                !!dateError.endDate ||
-                !localTimesheet.projectName.trim()
-              }
+              size={isMobile ? "small" : "medium"}
+              disabled={!!dateError.startDate || !!dateError.endDate}
+              sx={{
+                textTransform: "none",
+                px: 3,
+                borderRadius: 1,
+                backgroundColor: theme.palette.primary.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.primary.dark,
+                },
+                "&:disabled": {
+                  backgroundColor: theme.palette.action.disabledBackground,
+                },
+              }}
             >
               Update
             </Button>
@@ -278,11 +259,20 @@ const UpdateTimesheetDialog = ({
               onClick={handleDialogResubmit}
               variant="contained"
               color="success"
-              disabled={
-                !!dateError.startDate ||
-                !!dateError.endDate ||
-                !localTimesheet.projectName.trim()
-              }
+              size={isMobile ? "small" : "medium"}
+              disabled={!!dateError.startDate || !!dateError.endDate}
+              sx={{
+                textTransform: "none",
+                px: 3,
+                borderRadius: 1,
+                backgroundColor: theme.palette.success.main,
+                "&:hover": {
+                  backgroundColor: theme.palette.success.dark,
+                },
+                "&:disabled": {
+                  backgroundColor: theme.palette.action.disabledBackground,
+                },
+              }}
             >
               Submit
             </Button>
